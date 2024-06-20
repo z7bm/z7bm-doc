@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Loader - Zynq-7000 Baremetal</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Loader";
+        var mkdocs_page_input_path = "loader.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+ <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Zynq-7000 Baremetal
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">General</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Purpose</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../impl/">Implementation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Software</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Loader</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#_2">Общие сведения и назначение</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#_3">Старт</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#_4">Низкоуровневая инициализация</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#apu">Настройка APU</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_5">Таблица векторов прерываний</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#scu-mmu-l1-caches">Инвалидация SCU, MMU, L1 Caches</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#scu-invalidate-all-rregisters-in-secure-state-register">SCU Invalidate All Rregisters in Secure State Register</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#tlb">Инвалидация TLB, кэша инструкций, предсказателя ветвлений</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#_6">Инвалидация кэша данных</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#mmu">Запрещение MMU</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#spsr-sp">Настройка SPSR и SP</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#scu-mmu-l1">Включение SCU, MMU и кэшей L1</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#scu">Включение SCU</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#mmu_1">MMU</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#mmu-l1">Включение MMU и обоих кэшей L1:</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#auxiliary-control-register">Иницализация Auxiliary Control Register</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#_7">Таблица трансляции</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#l2">Кэш L2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_8">Завершение низкоуровневой инициализации</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#cp10-cp11">Разрешение работы сопроцессоров CP10 и CP11</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#vfp">Разрешение работы VFP</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#_9">Включение предсказателя ветвлений</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#l2_1">Коррекция настроек кэша L2</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#abort">Разрешение исключений типа Abort</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#_10">Приведение некоторых регистров сопроцессоров в детерминированное состояние</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#_11">Старт программы</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#ps">Инициализация периферийных устройств PS</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#_12">Общие сведения</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#_13">Процесс инициализации</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#main">Функция main</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#_17">Загрузка прикладной программы</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../app/">Application Program</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../debug/">Debug</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hardware</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../gic/">Interrupt Controller</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mmu/">Memory Management Unit</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Libraries</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../mmr-headers/">MMR Headers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../peripheral-lib/">Peripheral</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Zynq-7000 Baremetal</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Software</li>
+      <li class="breadcrumb-item active">Loader</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="_1">Загрузчик<a class="headerlink" href="#_1" title="Permanent link">🔗</a></h1>
+<h2 id="_2">Общие сведения и назначение<a class="headerlink" href="#_2" title="Permanent link">🔗</a></h2>
+<p>Загрузчик предназначен для выполнения операций начальной инициализации аппаратуры SoC, конфигурирования памяти (таблица трансляции адресов <strong>MMU</strong> и размещение сегментов <strong>OCM</strong>) и загрузки образа прикладной программы из флешь памяти в <strong>OCM</strong> с последующей передачей ей управления.</p>
+<p>На начальном этапе загрузчик производит низкоуровневую инициализацию (<strong>SCU</strong>, <strong>MMU</strong>, кэши <strong>L1</strong> и <strong>L2</strong> уровней), настройку режимов процессора (<strong>SPSR</strong> и <strong>SP</strong>) и выполняет код стартапа <strong>C/C++</strong>.</p>
+<p>Затем управление передаётся функции <code>main</code> загрузчика, которая осуществляет ремап таблицы трансляции <strong>MMU</strong>, перемещение сегментов <strong>OCM</strong> и собственно загрузку образа прикладной программы из флешь памяти в <strong>OCM</strong>.</p>
+<p>Начальный код загрузчика реализован на основе <strong>FSBL</strong> (First Stage Boot Loader) для <strong>Zynq-7000</strong>, который в свою очередь во многом базируется на референсном коде от <strong>ARM</strong>. Ниже приведено конспективное описание работы загрузчика.</p>
+<h2 id="_3">Старт<a class="headerlink" href="#_3" title="Permanent link">🔗</a></h2>
+<p>Работа программы начинается с кода, определённого в файле <code>boot.S</code>.</p>
+<p>По нулевым адресам расположена таблица векторов прерываний (исключений):</p>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="w">    </span><span class="nf">B</span><span class="w">   </span><span class="no">_boot</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nf">B</span><span class="w">   </span><span class="no">Undefined</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nf">B</span><span class="w">   </span><span class="no">SVCHandler</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nf">B</span><span class="w">   </span><span class="no">PrefetchAbortHandler</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nf">B</span><span class="w">   </span><span class="no">DataAbortHandler</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nf">NOP</span><span class="w"> </span><span class="cm">/* Placeholder for address exception vector*/</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nf">B</span><span class="w">   </span><span class="no">IRQHandler</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="nf">B</span><span class="w">   </span><span class="no">FIQHandler</span>
+</span></code></pre></div>
+<p>Старт программы происходит по вектору <code>_boot</code>, где расположен низкоуровневый код инициализации аппаратуры процессора</p>
+<h2 id="_4">Низкоуровневая инициализация<a class="headerlink" href="#_4" title="Permanent link">🔗</a></h2>
+<h3 id="apu">Настройка APU<a class="headerlink" href="#apu" title="Permanent link">🔗</a></h3>
+<p>Сначала производится ряд действий, непосредственно связанных я ядрами SoC.</p>
+<p>Первое действие - проверка идентификатора <code>CPU</code>, продолжать работу может только <code>CPU0</code>, остальные должны встать на ожидание:</p>
+<p><div class="language-asm highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="w">        </span><span class="cm">/* only allow cpu0 through */</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="nf">mrc</span><span class="w">  </span><span class="no">p15</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="no">r1</span><span class="p">,</span><span class="no">c0</span><span class="p">,</span><span class="no">c0</span><span class="p">,</span><span class="mi">5</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nf">and</span><span class="w">  </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span><span class="no">xf</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nf">cmp</span><span class="w">  </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nf">beq</span><span class="w">  </span><span class="no">CheckEFUSE</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nl">EndlessLoop0:</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nf">wfe</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="nf">b</span><span class="w">   </span><span class="no">EndlessLoop0</span>
+</span></code></pre></div>
+Здесь считывается Affinity Register процессора (расположенный в сопроцессоре CP15), в младших битах которого закодирован идентификатор (номер) ядра, далее проверяется значение этого поля, если оно не ноль, то ядро паркуется  в <code>wfe</code>.</p>
+<p>Далее проверяется, сколько ядер у <code>APU</code>, если одно, то второе ядро сбрасывается. Два непонятных момента:</p>
+<ol>
+<li>Информация о количестве ядер считывается из некоего регистра <code>EFUSEStatus</code>, описание которого в документации найти не удалось. </li>
+<li>Если ядро <code>CPU1</code> отсутствует, то не ясно, зачем держать его в сбросе и при останавливать клок, а именно это в коде и делается (<code>orr r1, r1, #0x22</code> - установка битов сброса и останова клока для <code>CPU1</code>):</li>
+</ol>
+<p><div class="language-asm highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">SLCRCPURSTReg</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r1</span><span class="p">,[</span><span class="no">r0</span><span class="p">]</span><span class="w">                             </span><span class="cm">/* Read CPU Software Reset Control register */</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="no">r1</span><span class="p">,</span><span class="mi">#0</span><span class="no">x22</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nf">str</span><span class="w"> </span><span class="no">r1</span><span class="p">,[</span><span class="no">r0</span><span class="p">]</span><span class="w">                             </span><span class="cm">/* Reset CPU1 */</span>
+</span></code></pre></div>
+Возможно, это связано с тем, что хотя самого ядра и нет, но окружающая его инфраструктура  никуда не делась (она является частью общей системы), и чтобы она не потребляла и/или не создавала каких-либо других проблем, её нужно отключить. Это предположение, в документации никаких сведений об этом обнаружить не удалось.</p>
+<p>Затем производится извлечение номера ревизии процессора и обрабатываются две errata. Что именно тут делается, не ясно, производится модификация битов какого-то диагностического регистра (а может, и не производится - операции условные). Всё это не документировано. </p>
+<h3 id="_5">Таблица векторов прерываний<a class="headerlink" href="#_5" title="Permanent link">🔗</a></h3>
+<p>Выполняется установка таблицы векторов прерываний:</p>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="err">=</span><span class="no">vector_base</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">c12</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span>
+</span></code></pre></div>
+<p><code>CP15-&gt;c12</code>&nbsp;– это регистр <code>VBAR</code>, т.е. как раз и есть Vector Base Address Register.</p>
+<h3 id="scu-mmu-l1-caches">Инвалидация SCU, MMU, L1 Caches<a class="headerlink" href="#scu-mmu-l1-caches" title="Permanent link">🔗</a></h3>
+<p>Производится инвалидация кэшей, таблицы <strong>MMU</strong> и предсказателя ветвлений. </p>
+<h4 id="scu-invalidate-all-rregisters-in-secure-state-register">SCU Invalidate All Rregisters in Secure State Register<a class="headerlink" href="#scu-invalidate-all-rregisters-in-secure-state-register" title="Permanent link">🔗</a></h4>
+<p>Инвалидация всех каналов (ways) на уровне SCU.</p>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="w">    </span><span class="cm">/*invalidate scu*/</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r7</span><span class="p">,</span><span class="w"> </span><span class="err">=</span><span class="mi">0xf8f0000c</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r6</span><span class="p">,</span><span class="w"> </span><span class="err">=</span><span class="mi">0xffff</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nf">str</span><span class="w"> </span><span class="no">r6</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r7</span><span class="p">]</span>
+</span></code></pre></div>
+<h4 id="tlb">Инвалидация TLB, кэша инструкций, предсказателя ветвлений<a class="headerlink" href="#tlb" title="Permanent link">🔗</a></h4>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="w">    </span><span class="cm">/* Invalidate caches and TLBs */</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="mi">#0</span><span class="w">                       </span><span class="cm">/* r0 = 0  */</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">c8</span><span class="p">,</span><span class="w"> </span><span class="no">c7</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w">       </span><span class="cm">/* invalidate TLBs */</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">c7</span><span class="p">,</span><span class="w"> </span><span class="no">c5</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w">       </span><span class="cm">/* invalidate icache */</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">c7</span><span class="p">,</span><span class="w"> </span><span class="no">c5</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="w">       </span><span class="cm">/* Invalidate branch predictor array */</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nf">bl</span><span class="w">  </span><span class="no">invalidate_dcache</span><span class="w">           </span><span class="cm">/* invalidate dcache */</span>
+</span></code></pre></div>
+<h4 id="_6">Инвалидация кэша данных<a class="headerlink" href="#_6" title="Permanent link">🔗</a></h4>
+<p>Подпрограмма <code>invalidate_dcache</code> выполняет инвалидацию кэша данных. Процессор Cortex-A9 не имеет инструкции, которая могла бы инвалидировать весь кэш данных, поэтому приходится инвалидировать по одной линии.</p>
+<p>Первым делом определяется уровень кэша:</p>
+<p><div class="language-asm highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="w">   </span><span class="nf">mrc</span><span class="w">  </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">   </span><span class="cm">/* read CLIDR */</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">   </span><span class="nf">ands</span><span class="w"> </span><span class="no">r3</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span><span class="no">x7000000</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">   </span><span class="nf">mov</span><span class="w">  </span><span class="no">r3</span><span class="p">,</span><span class="w"> </span><span class="no">r3</span><span class="p">,</span><span class="w"> </span><span class="no">lsr</span><span class="w"> </span><span class="mi">#23</span><span class="w">         </span><span class="cm">/* cache level value (naturally aligned) */</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">   </span><span class="nf">beq</span><span class="w">  </span><span class="no">finished</span>
+</span></code></pre></div>
+Здесь из регистра <code>CLIDR</code> (Cache Level ID Register) сопроцессора <code>CP15</code> считывается значение, маскируется поле <code>LoUU</code> (Level of unification, uniprocessor, 29:27 биты), результат "нормализуется" - поле перемещается в младшие биты, после чего в результирующем регистре содержится уровень кэша (в нашем случае это значение равно 2).
+Если уровень кэша 0, то инвалидация не производится и процессор переходит к выполнению эпилога подпрограммы.</p>
+<div class="admonition tip">
+<p class="admonition-title"><strong>ARMv7 Architecture Reference Manual</strong></p>
+<p>LoUU, Level of unification, uniprocessor This field defines the last level of cache that must be cleaned or invalidated when cleaning or invalidating to the point of unification for the processor. As with LoC, the LoUU value is a cache level. If the LoUU field value is 0x0, this means that no levels of cache need to cleaned or invalidated when cleaning or invalidating to the point of unification. If the LoUU field value is a nonzero value that corresponds to a level that is not implemented, this indicates that all implemented caches are before the point of unification.</p>
+</div>
+<p>Затем, собственно, производится инвалидация кэша данных и возврат к продолжению инициализации:</p>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">r10</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span><span class="w">             </span><span class="cm">/* start with level 0 */</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nl">loop1:</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nf">add</span><span class="w"> </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="no">r10</span><span class="p">,</span><span class="w"> </span><span class="no">r10</span><span class="p">,</span><span class="w"> </span><span class="no">lsr</span><span class="w"> </span><span class="mi">#1</span><span class="w">       </span><span class="cm">/* work out 3xcachelevel */</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">lsr</span><span class="w"> </span><span class="no">r2</span><span class="w">             </span><span class="cm">/* bottom 3 bits are the Cache type for this level */</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="nf">and</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="mi">#7</span><span class="w">                 </span><span class="cm">/* get those 3 bits alone */</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="nf">cmp</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="mi">#2</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="nf">blt</span><span class="w"> </span><span class="no">skip</span><span class="w">                       </span><span class="cm">/* no cache or only instruction cache at this level */</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="no">r10</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w">     </span><span class="cm">/* write the Cache Size selection register */</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="nf">isb</span><span class="w">                            </span><span class="cm">/* isb to sync the change to the CacheSizeID reg */</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">    </span><span class="nf">mrc</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w">      </span><span class="cm">/* reads current Cache Size ID register */</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="nf">and</span><span class="w"> </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="mi">#7</span><span class="w">                 </span><span class="cm">/* extract the line length field */</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">    </span><span class="nf">add</span><span class="w"> </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="mi">#4</span><span class="w">                 </span><span class="cm">/* add 4 for the line length offset (log2 16 bytes) */</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r4</span><span class="p">,</span><span class="w"> </span><span class="err">=</span><span class="mi">0x3ff</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">    </span><span class="nf">ands</span><span class="w">    </span><span class="no">r4</span><span class="p">,</span><span class="w"> </span><span class="no">r4</span><span class="p">,</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="no">lsr</span><span class="w"> </span><span class="mi">#3</span><span class="w">     </span><span class="cm">/* r4 is the max number on the way size (right aligned) */</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">    </span><span class="nf">clz</span><span class="w"> </span><span class="no">r5</span><span class="p">,</span><span class="w"> </span><span class="no">r4</span><span class="w">                     </span><span class="cm">/* r5 is the bit position of the way size increment */</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r7</span><span class="p">,</span><span class="w"> </span><span class="err">=</span><span class="mi">0x7fff</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">    </span><span class="nf">ands</span><span class="w">    </span><span class="no">r7</span><span class="p">,</span><span class="w"> </span><span class="no">r7</span><span class="p">,</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="no">lsr</span><span class="w"> </span><span class="mi">#13</span><span class="w">    </span><span class="cm">/* r7 is the max number of the index size (right aligned) */</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="nl">loop2:</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">r9</span><span class="p">,</span><span class="w"> </span><span class="no">r4</span><span class="w">                     </span><span class="cm">/* r9 working copy of the max way size (right aligned) */</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="nl">loop3:</span>
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r11</span><span class="p">,</span><span class="w"> </span><span class="no">r10</span><span class="p">,</span><span class="w"> </span><span class="no">r9</span><span class="p">,</span><span class="w"> </span><span class="no">lsl</span><span class="w"> </span><span class="no">r5</span><span class="w">       </span><span class="cm">/* factor in the way number and cache number into r11 */</span>
+</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r11</span><span class="p">,</span><span class="w"> </span><span class="no">r11</span><span class="p">,</span><span class="w"> </span><span class="no">r7</span><span class="p">,</span><span class="w"> </span><span class="no">lsl</span><span class="w"> </span><span class="no">r2</span><span class="w">       </span><span class="cm">/* factor in the index number */</span>
+</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r11</span><span class="p">,</span><span class="w"> </span><span class="no">c7</span><span class="p">,</span><span class="w"> </span><span class="no">c6</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">     </span><span class="cm">/* invalidate by set/way */</span>
+</span><span id="__span-7-24"><a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="w">    </span><span class="nf">subs</span><span class="w">    </span><span class="no">r9</span><span class="p">,</span><span class="w"> </span><span class="no">r9</span><span class="p">,</span><span class="w"> </span><span class="mi">#1</span><span class="w">             </span><span class="cm">/* decrement the way number */</span>
+</span><span id="__span-7-25"><a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="w">    </span><span class="nf">bge</span><span class="w"> </span><span class="no">loop3</span><span class="w">   </span>
+</span><span id="__span-7-26"><a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a><span class="w">    </span><span class="no">subs</span><span class="w">    </span><span class="no">r7</span><span class="p">,</span><span class="w"> </span><span class="no">r7</span><span class="p">,</span><span class="w"> </span><span class="mi">#1</span><span class="w">             </span><span class="cm">/* decrement the index */</span>
+</span><span id="__span-7-27"><a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="w">    </span><span class="nf">bge</span><span class="w"> </span><span class="no">loop2</span><span class="w">   </span>
+</span><span id="__span-7-28"><a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="no">skip</span><span class="p">:</span><span class="w">   </span>
+</span><span id="__span-7-29"><a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="w">    </span><span class="no">add</span><span class="w"> </span><span class="no">r10</span><span class="p">,</span><span class="w"> </span><span class="no">r10</span><span class="p">,</span><span class="w"> </span><span class="mi">#2</span><span class="w">               </span><span class="cm">/* increment the cache number */</span>
+</span><span id="__span-7-30"><a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a><span class="w">    </span><span class="nf">cmp</span><span class="w"> </span><span class="no">r3</span><span class="p">,</span><span class="w"> </span><span class="no">r10</span><span class="w">   </span>
+</span><span id="__span-7-31"><a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a><span class="w">    </span><span class="no">bgt</span><span class="w"> </span><span class="no">loop1</span>
+</span><span id="__span-7-32"><a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>
+</span><span id="__span-7-33"><a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a><span class="nl">finished:</span>
+</span><span id="__span-7-34"><a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a><span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">r10</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span><span class="w">                    </span><span class="cm">/* swith back to cache level 0 */</span>
+</span><span id="__span-7-35"><a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="no">r10</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w">     </span><span class="cm">/* select current cache level in cssr */</span>
+</span><span id="__span-7-36"><a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a><span class="w">    </span><span class="nf">dsb</span>
+</span><span id="__span-7-37"><a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a><span class="w">    </span><span class="nf">isb</span>
+</span><span id="__span-7-38"><a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a>
+</span><span id="__span-7-39"><a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a><span class="w">    </span><span class="nf">bx</span><span class="w">  </span><span class="no">lr</span>
+</span></code></pre></div>
+<p>Этот код вычисляет уровень кэша и производит в цикле инвалидацию кэша по схеме "way-line", т.е. проходит вложенный цикл (первый уровень - проход по ways, второй - проход по линиям). Для L1 кэша это 4 цикла по way и 256 циклов по линиям.</p>
+<p>Фрагмент с <code>loop1</code> до <code>loop2</code> - обработка сведений о структуре кэшей, извлекаются параметры кэша текущего уровня (сколько way, сколько линий и т.д.). Фрагмент с <code>loop2</code> до <code>skip</code> выполняет собственно инвалидацию. Внешний цикл (<code>loop2</code>-<code>skip</code>) обрабатывает ways кэша, вложенный цикл (<code>loop3</code>-<code>bge loop3</code>) непосредственно инвалидирует линии кэша.</p>
+<p>Код рассчитан на инвалидацию обоих уровней (L1 и L2), но реально при загрузке при первом вызове обрабатывается только L1 кэш, L2 неактивен - видимо потому, что он (L2  кэш) ещё не разрешён.</p>
+<p>В конце производится переключение регистра, определяющего текущий уровень кэша, на значение, соответствующее уровню L1 (это актуально, если подпрограмма обрабатывала кэши разных уровней).</p>
+<h3 id="mmu">Запрещение MMU<a class="headerlink" href="#mmu" title="Permanent link">🔗</a></h3>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="w">    </span><span class="cm">/* Disable MMU, if enabled */</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="nf">mrc</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">c1</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w">      </span><span class="cm">/* read CP15 register 1 */</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="nf">bic</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span><span class="no">x1</span><span class="w">               </span><span class="cm">/* clear bit 0 */</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">c1</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w">      </span><span class="cm">/* write value back */</span>
+</span></code></pre></div>
+<p>Хотя <strong>MMU</strong> в этот момент и так запрещено. Запрет производится через сброс бита <code>M</code> в регистре <code>SCTLR</code>, бит этот называется в документации от ARM: <code>MPU</code> enable bit. В <code>Cortex-A</code> нет <code>MPU</code>, а вместо него <strong>MMU</strong>. Имеется ли в виду, что подразумевается устройство в зависимости от контекста, не ясно. По коду видимо так.</p>
+<h3 id="spsr-sp">Настройка SPSR и SP<a class="headerlink" href="#spsr-sp" title="Permanent link">🔗</a></h3>
+<p>Производится настройка <code>SPSR</code> и <code>SP</code> для режимов <code>IRQ</code>, <code>SVC</code>, <code>Abort</code>, <code>FIQ</code>, <code>Undefined</code>, <code>System (User)</code>. Код по сути один и тот же, меняется только режим (путём установки битового поля <code>M</code> в <code>CPSR</code>). Код для <code>IRQ</code>:</p>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="w">    </span><span class="nf">mrs</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">cpsr</span><span class="w">               </span><span class="cm">/* get the current PSR */</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nf">mvn</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span><span class="no">x1f</span><span class="w">              </span><span class="cm">/* set up the irq stack pointer */</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="nf">and</span><span class="w"> </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span><span class="no">x12</span><span class="w">          </span><span class="cm">/* IRQ mode */</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="nf">msr</span><span class="w"> </span><span class="no">cpsr</span><span class="p">,</span><span class="w"> </span><span class="no">r2</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r13</span><span class="p">,</span><span class="err">=</span><span class="no">IRQ_stack</span><span class="w">         </span><span class="cm">/* IRQ stack pointer */</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span><span class="nf">bic</span><span class="w"> </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="c1">#(0x1 &lt;&lt; 9)    /* Set EE bit to little-endian */</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="nf">msr</span><span class="w"> </span><span class="no">spsr_fsxc</span><span class="p">,</span><span class="no">r2</span>
+</span></code></pre></div>
+<p>Константа в инструкции <code>orr r2, r2, #0x12</code> определяет режим, следующая за ней <code>msr cpsr, r2</code> меняет режим. 
+<code>ldr r13,=IRQ_stack</code> загружает значение указателя стека в <code>SP</code>, а <code>msr spsr_fsxc,r2</code> инициализирует статусный регистр этого режима.</p>
+<p>Обработка остальных режимов, перечисленных выше, точно такая же, меняются только константы режимов и адреса стеков.</p>
+<h3 id="scu-mmu-l1">Включение SCU, MMU и кэшей L1<a class="headerlink" href="#scu-mmu-l1" title="Permanent link">🔗</a></h3>
+<p>После настройки режимов производится включение <code>SCU</code>, <strong>MMU</strong> и кэшей первого уровня.</p>
+<h4 id="scu">Включение SCU<a class="headerlink" href="#scu" title="Permanent link">🔗</a></h4>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="w">    </span><span class="cm">/*set scu enable bit in scu*/</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r7</span><span class="p">,</span><span class="w"> </span><span class="err">=</span><span class="mi">0xf8f00000</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r7</span><span class="p">]</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span><span class="no">x1</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="nf">str</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r7</span><span class="p">]</span>
+</span></code></pre></div>
+<p>Здесь всё просто: <code>0xf8f00000</code> - это адрес регистра <code>SCU_CONTROL_REGISTER</code> из группы <code>mpcore</code>, младший бит этого регистра <code>SCU_enable</code>. Вышеприведённый код просто устанавливает этот бит, разрешая тем самым работу <code>SCU</code>.</p>
+<h4 id="mmu_1">MMU<a class="headerlink" href="#mmu_1" title="Permanent link">🔗</a></h4>
+<p>Затем производится настройка регистра <code>TTBR0</code> из группы управления <strong>MMU</strong>:</p>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">TblBase</span><span class="w">         </span><span class="cm">/* Load MMU translation table base */</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span><span class="no">x5B</span><span class="w">           </span><span class="cm">/* Outer-cacheable, WB */</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">c2</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w">        </span><span class="cm">/* TTB0 */</span>
+</span></code></pre></div>
+<p>Здесь формируется значение регистра с последующей загрузкой непосредственно в регистр. Формат регистра:</p>
+<table>
+<thead>
+<tr>
+<th>31:x</th>
+<th>x-1:7</th>
+<th>6</th>
+<th>5</th>
+<th>4:3</th>
+<th>2</th>
+<th>1</th>
+<th>0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TTB</code> Addr</td>
+<td>Reserved</td>
+<td><code>IRGN[0]</code></td>
+<td><code>NOS</code></td>
+<td><code>RGN</code></td>
+<td><code>IMP</code></td>
+<td><code>S</code></td>
+<td><code>IRGN[1]</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>TTB</code> (Translation Table Base) Address занимает биты <code>31:x</code>, где <code>x = 14 - TTBCR.N</code>, а <code>TTBCR.N</code> согласно документации:</p>
+<div class="admonition tip">
+<p class="admonition-title">TTBCR.N</p>
+<p><code>N, bits[2:0]</code> Indicate the width of the base address held in <code>TTBR0</code>. In <code>TTBR0</code>, the base address field is bits<code>[31:14-N]</code>. The value of <code>N</code> also determines: </p>
+<ul>
+<li>whether <code>TTBR0</code> or <code>TTBR1</code> is used as the base address for translation table walks. </li>
+<li>the size of the translation table pointed to by <code>TTBR0</code>. </li>
+</ul>
+<p>N can take any value from <code>0</code> to <code>7</code>, that is, from <code>0b000</code> to <code>0b111</code>. When <code>N</code> has its reset value of <code>0</code>, the translation table base is compatible with <strong>ARMv5</strong> and <strong>ARMv6</strong>.</p>
+</div>
+<p>Значение по умолчанию <code>TTBCR.N</code> равно <code>0</code>, что соответствует <code>x = 14</code>, т.е. младшие 14 разрядов под биты адреса не используются и при формировании значения адреса предполагаются равными 0 (сама таблица трансляции должна быть выровнена на границу своего размера, т.е. в этом случае размер таблицы 16к и её размещение должно быть выровнено на границу 16к. Это даёт возможность использовать младшие биты для конфигурирования свойств <strong>MMU</strong>.</p>
+<p>Остальные поля регистра <code>TTBR</code>:</p>
+<div class="admonition tip">
+<p class="admonition-title">TTBR</p>
+<p><code>NOS, bit[5]</code></p>
+<p>Not Outer Shareable bit. Indicates the Outer Shareable attribute for the memory associated with a translation table walk that has the Shareable attribute, indicated by <code>TTBR0.S == 1</code>: </p>
+<ul>
+<li><code>0</code> Outer Shareable </li>
+<li><code>1</code> Inner Shareable. </li>
+</ul>
+<p>This bit is ignored when <code>TTBR0.S == 0</code>. ARMv7 introduces this bit. If an implementation does not distinguish between Inner Shareable and Outer Shareable, this bit is <code>UNK/SBZP</code>.</p>
+<p><code>RGN, bits[4:3]</code></p>
+<p>Region bits. Indicates the Outer cacheability attributes for the memory associated with the translation table walks: </p>
+<ul>
+<li><code>0b00</code> Normal memory, Outer Non-cacheable. </li>
+<li><code>0b01</code> Normal memory, Outer Write-Back Write-Allocate Cacheable. </li>
+<li><code>0b10</code> Normal memory, Outer Write-Through Cacheable. </li>
+<li><code>0b11</code> Normal memory, Outer Write-Back no Write-Allocate Cacheable.</li>
+</ul>
+<p><code>IMP, bit[2]</code></p>
+<p>The effect of this bit is IMPLEMENTATION DEFINED. If the translation table implementation does not include any IMPLEMENTATION DEFINED features this bit is <code>UNK/SBZP</code>.</p>
+<p><code>S, bit[1]</code></p>
+<p>Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table walks: </p>
+<ul>
+<li><code>0</code> Non-shareable </li>
+<li><code>1</code> Shareable.</li>
+</ul>
+<p><code>IRGN, bits[6, 0]</code>, in an implementation that includes the Multiprocessing Extensions </p>
+<p>Inner region bits. Indicates the Inner Cacheability attributes for the memory associated with the translation table walks. The possible values of IRGN[1:0] are: </p>
+<ul>
+<li><code>0b00</code> Normal memory, Inner Non-cacheable. </li>
+<li><code>0b01</code> Normal memory, Inner Write-Back Write-Allocate Cacheable. </li>
+<li><code>0b10</code> Normal memory, Inner Write-Through Cacheable. </li>
+<li><code>0b11</code> Normal memory, Inner Write-Back no Write-Allocate Cacheable.</li>
+</ul>
+</div>
+<p>Таким образом, значение <code>0x5B</code> == 0<code>b01011011</code> соответствует значениям полей:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IRGN</code></td>
+<td><code>0b11</code></td>
+<td>Normal memory, Inner Write-Back no Write-Allocate Cacheable.</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td><code>1</code></td>
+<td>Shareable</td>
+</tr>
+<tr>
+<td><code>IMP</code></td>
+<td><code>0</code></td>
+<td>MMU not include any IMPLEMENTATION DEFINED features</td>
+</tr>
+<tr>
+<td><code>RGN</code></td>
+<td><code>0b11</code></td>
+<td>Normal memory, Outer Write-Back no Write-Allocate Cacheable.</td>
+</tr>
+<tr>
+<td><code>NOS</code></td>
+<td><code>0</code></td>
+<td>Outer Shareable</td>
+</tr>
+</tbody>
+</table>
+<p>Затем идёт настройка <code>MMU domain</code>:</p>
+<p><div class="language-asm highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="w">    </span><span class="nf">mvn</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="mi">#0</span><span class="w">               </span><span class="cm">/* Load MMU domains -- all ones=manager */</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="no">r0</span><span class="p">,</span><span class="no">c3</span><span class="p">,</span><span class="no">c0</span><span class="p">,</span><span class="mi">0</span>
+</span></code></pre></div>
+Действие понятно из комментария.</p>
+<h4 id="mmu-l1">Включение MMU и обоих кэшей L1:<a class="headerlink" href="#mmu-l1" title="Permanent link">🔗</a></h4>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="w">    </span><span class="cm">/* Enable mmu, icahce and dcache */</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">CRValMmuCac</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="no">r0</span><span class="p">,</span><span class="no">c1</span><span class="p">,</span><span class="no">c0</span><span class="p">,</span><span class="mi">0</span><span class="w">        </span><span class="cm">/* Enable cache and MMU */</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span><span class="nf">dsb</span><span class="w">                         </span><span class="cm">/* dsb  allow the MMU to start up */</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">    </span><span class="nf">isb</span><span class="w">                         </span><span class="cm">/* isb  flush prefetch buffer */</span>
+</span></code></pre></div>
+<p>Здесь в <code>SCTRL</code> (это <code>CP15 c1, c0</code>) загружается значение <code>0x1005</code>, что соответствует установке битов <code>I</code> (кэш инструкций), <code>C</code> (кэш данных и унифицированный кэш) и <code>M</code> (<strong>MMU</strong>). Согласно документации:</p>
+<div class="admonition tip">
+<p class="admonition-title"><strong>In ARMv7</strong></p>
+<ul>
+<li>
+<p><strong>SCTLR.C</strong> enables or disables all data and unified caches for data accesses, across all levels of cache visible to the processor. It is IMPLEMENTATION DEFINED whether it also enables or disables the use of unified caches for instruction accesses.</p>
+</li>
+<li>
+<p><strong>SCTLR.I</strong> enables or disables all instruction caches, across all levels of cache visible to the processor.</p>
+</li>
+</ul>
+</div>
+<p>Т.е. биты включения/выключения кэшей работают глобально "сквозь" все уровни кэшей.</p>
+<h4 id="auxiliary-control-register">Иницализация Auxiliary Control Register<a class="headerlink" href="#auxiliary-control-register" title="Permanent link">🔗</a></h4>
+<div class="admonition tip">
+<p class="admonition-title"><strong>ARMv7-A</strong></p>
+<p>The ACTLR provides IMPLEMENTATION DEFINED configuration and control options.</p>
+</div>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="w">    </span><span class="cm">/* Write to ACTLR */</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="nf">mrc</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">c1</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">       </span><span class="cm">/* Read ACTLR*/</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="c1">#(0x01 &lt;&lt; 6)        /* set SMP bit */</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="c1">#(0x01 )            /* Cache/TLB maintenance broadcast */</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">c1</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">       </span><span class="cm">/* Write ACTLR*/</span>
+</span></code></pre></div>
+<p>Этот код устанавливает в регистре <code>ACTRL</code> Cortex-A9 биты <code>SMP</code> и <code>FW</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SMP</code></td>
+<td>Signals if the Cortex-A9 processor is taking part in coherency or not. In uniprocessor configurations, if this bit is set,<br> then Inner Cacheable Shared is treated as Cacheable. The reset value is zero.</td>
+</tr>
+<tr>
+<td><code>FW</code></td>
+<td>Cache and TLB maintenance broadcast:<ul><li>0 Disabled. This is the reset value.</li><li>1 Enabled.</li></ul> <code>RAZ/WI</code> if only one Cortex-A9 processor is present.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="_7">Таблица трансляции<a class="headerlink" href="#_7" title="Permanent link">🔗</a></h4>
+<p><strong>MMU</strong> использует инициализированную <a href="../mmu">таблицу трансляции адресов</a> (описана в <code>translation_table.S</code>).</p>
+<h3 id="l2">Кэш L2<a class="headerlink" href="#l2" title="Permanent link">🔗</a></h3>
+<p>Кэш <code>L2</code> не входит в ядро, и поэтому управляется не через регистры сопроцессора <code>CP15</code>, а через регистры, отображаемые на адресное пространство памяти (memory-mapped registers - MMRs).</p>
+<p>Выполняемые действия:</p>
+<p><div class="language-asm highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCCrtl</span><span class="w">        </span><span class="cm">/* Load L2CC base address base + control register */</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span><span class="w">              </span><span class="cm">/* force the disable bit */</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="nf">str</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r0</span><span class="p">]</span><span class="w">            </span><span class="cm">/* disable the L2 Caches */</span>
+</span></code></pre></div>
+Производится загрузка значения 0 в бит 'l2_enable<code>регистра</code>reg1_control`, что означает запрещение работы L2 кэша.</p>
+<p>Далее:
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="w">   </span><span class="nf">ldr</span><span class="w">  </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCAuxCrtl</span><span class="w">     </span><span class="cm">/* Load L2CC base address base + Aux control register */</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">   </span><span class="nf">ldr</span><span class="w">  </span><span class="no">r1</span><span class="p">,[</span><span class="no">r0</span><span class="p">]</span><span class="w">             </span><span class="cm">/* read the register */</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">   </span><span class="nf">ldr</span><span class="w">  </span><span class="no">r2</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCAuxControl</span><span class="w">  </span><span class="cm">/* set the default bits */</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">   </span><span class="nf">orr</span><span class="w">  </span><span class="no">r1</span><span class="p">,</span><span class="no">r1</span><span class="p">,</span><span class="no">r2</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">   </span><span class="nf">str</span><span class="w">  </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r0</span><span class="p">]</span><span class="w">            </span><span class="cm">/* store the Aux Control Register */</span>
+</span></code></pre></div>
+Считывается значение регистра <code>reg1_aux_control</code>, оно соответствует значению по умолчанию: <code>0x02060000</code>. В дополнение к этому устанавливаются ещё биты <code>0x72360000</code>, что даёт в результате то же самое <code>0x72360000</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th style="text-align: right;">Bit</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>way_size</td>
+<td style="text-align: right;">19:17</td>
+<td>Way-size, <code>0x3</code> = <code>64KB</code></td>
+</tr>
+<tr>
+<td>event_mon_bus_en</td>
+<td style="text-align: right;">20</td>
+<td>Event monitor bus enable, <code>1</code> = Enabled</td>
+</tr>
+<tr>
+<td>parity_en</td>
+<td style="text-align: right;">21</td>
+<td>Parity enable, <code>1</code> = Enabled</td>
+</tr>
+<tr>
+<td>data_prefetch_en</td>
+<td style="text-align: right;">28</td>
+<td>Data prefetch enable, <code>1</code> = Enabled</td>
+</tr>
+<tr>
+<td>instr_prefetch_en</td>
+<td style="text-align: right;">29</td>
+<td>Instruction prefetch enable, <code>1</code> = Enabled</td>
+</tr>
+<tr>
+<td>early_bresp_en</td>
+<td style="text-align: right;">30</td>
+<td>Early BRESP enable, <code>1</code> = Enabled</td>
+</tr>
+</tbody>
+</table>
+<p>Затем в регистр <code>reg1_tag_ram_control</code> загружается значение <code>0x00000111</code>:
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="w">   </span><span class="nf">ldr</span><span class="w">  </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCTAGLatReg</span><span class="w">       </span><span class="cm">/* Load L2CC base address base + TAG Latency address */</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">   </span><span class="nf">ldr</span><span class="w">  </span><span class="no">r1</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCTAGLatency</span><span class="w">      </span><span class="cm">/* set the latencies for the TAG*/</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">   </span><span class="nf">str</span><span class="w">  </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r0</span><span class="p">]</span><span class="w">                </span><span class="cm">/* store the TAG Latency register Register */</span>
+</span></code></pre></div>
+что устанавливает значения полей регистра:
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>ram_setup_lat     = 0x1
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>ram_rd_access_lat = 0x1
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>ram_wr_access_lat = 0x1
+</span></code></pre></div>
+Значение <code>0x1</code> для любого из этих полей соответствует <code>2 cycles latency</code>.</p>
+<p>Далее аналогичная загрузка производится в регистр <code>reg1_data_ram_control</code>:
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="w">   </span><span class="nf">ldr</span><span class="w">  </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCDataLatReg</span><span class="w">      </span><span class="cm">/* Load L2CC base address base + Data Latency address */</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">   </span><span class="nf">ldr</span><span class="w">  </span><span class="no">r1</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCDataLatency</span><span class="w">     </span><span class="cm">/* set the latencies for the Data*/</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">   </span><span class="nf">str</span><span class="w">  </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r0</span><span class="p">]</span><span class="w">                </span><span class="cm">/* store the Data Latency register Register */</span>
+</span></code></pre></div>
+только значение загружается <code>0x00000121</code>, что соответствует:
+<div class="language-text highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>ram_setup_lat     = 0x1 (2 cycles latency)
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>ram_rd_access_lat = 0x2 (3 cycles latency)
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>ram_wr_access_lat = 0x1 (2 cycles latency)
+</span></code></pre></div></p>
+<p>После этого загружается регистр <code>reg7_inv_way</code> значением <code>0x0000ffff</code>, что инвалидирут все каналы (ways) кэша:
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="w">   </span><span class="nf">ldr</span><span class="w">  </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCWay</span><span class="w">         </span><span class="cm">/* Load L2CC base address base + way register*/</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">   </span><span class="nf">ldr</span><span class="w">  </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="err">=</span><span class="mi">0xFFFF</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">   </span><span class="nf">str</span><span class="w">  </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r0</span><span class="p">]</span><span class="w">            </span><span class="cm">/* force invalidate */</span>
+</span></code></pre></div>
+Тут не совсем понятно: в этом регистре значимые биты только <code>7:0</code>, каждый бит отвечает за свой канал, а поскольку L2 кэш является 8-канальным, то и битов, соответствующих каналам, тоже 8. Т.е. загружаемое значение должно быть <code>0x000000ff</code>. Старшие биты <code>31:8</code> в документации обозначены как <code>reserved</code>. Похоже на баг.</p>
+<p>После инвалидации производится цикл ожидания, который называется почему-то синхронизацией. По факту цикле читается значение регистра <code>reg7_cache_sync</code>, в котором только один значимый бит <code>c</code>:</p>
+<div class="admonition tip">
+<p class="admonition-title"><strong>Cache Sync</strong></p>
+<p><strong>c</strong>: Cache Sync: Drain the STB. Operation complete when all buffers, <code>LRB</code>, <code>LFB</code>, <code>STB</code> and <code>EB</code>, are empty.</p>
+</div>
+<p>Код опроса регистра:
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="w">   </span><span class="nf">ldr</span><span class="w">  </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCSync</span><span class="w">            </span><span class="cm">/* need to poll 0x730, PSS_L2CC_CACHE_SYNC_OFFSET */</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">                                </span><span class="cm">/* Load L2CC base address base + sync register*/</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">   </span><span class="cm">/* poll for completion */</span>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="nl">Sync:</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">   </span><span class="nf">ldr</span><span class="w">  </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r0</span><span class="p">]</span>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">   </span><span class="nf">cmp</span><span class="w">  </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">   </span><span class="nf">bne</span><span class="w">  </span><span class="no">Sync</span>
+</span></code></pre></div></p>
+<p>Далее производится сброс битов (флагов) прерываний:
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCIntRaw</span><span class="w">          </span><span class="cm">/* clear pending interrupts */</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r1</span><span class="p">,[</span><span class="no">r0</span><span class="p">]</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCIntClear</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span><span class="nf">str</span><span class="w"> </span><span class="no">r1</span><span class="p">,[</span><span class="no">r0</span><span class="p">]</span>
+</span></code></pre></div>
+Тут читается значение статусного регистра прерываний и затем оно записывается в регистр сброса флагов прерываний&nbsp;– сброс флага производится путём записи <code>1</code>, т.е. если какой-либо флаг был установлен, он будет сброшен.</p>
+<p>Завершающая цепочка действий:</p>
+<p><div class="language-asm highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">SLCRUnlockReg</span><span class="w">       </span><span class="cm">/* Load SLCR base address base + unlock register */</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="err">=</span><span class="no">SLCRUnlockKey</span><span class="w">       </span><span class="cm">/* set unlock key */</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">    </span><span class="nf">str</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r0</span><span class="p">]</span><span class="w">                </span><span class="cm">/* Unlock SLCR */</span>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">SLCRL2cRamReg</span><span class="w">       </span><span class="cm">/* Load SLCR base address base + l2c Ram Control register */</span>
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="err">=</span><span class="no">SLCRL2cRamConfig</span><span class="w">    </span><span class="cm">/* set the configuration value */</span>
+</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="w">    </span><span class="nf">str</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r0</span><span class="p">]</span><span class="w">                </span><span class="cm">/* store the L2c Ram Control Register */</span>
+</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>
+</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">SLCRlockReg</span><span class="w">         </span><span class="cm">/* Load SLCR base address base + lock register */</span>
+</span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="err">=</span><span class="no">SLCRlockKey</span><span class="w">         </span><span class="cm">/* set lock key */</span>
+</span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="w">    </span><span class="nf">str</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r0</span><span class="p">]</span><span class="w">                </span><span class="cm">/* lock SLCR */</span>
+</span><span id="__span-24-12"><a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>
+</span><span id="__span-24-13"><a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="err">=</span><span class="no">L2CCCrtl</span><span class="w">            </span><span class="cm">/* Load L2CC base address base + control register */</span>
+</span><span id="__span-24-14"><a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a><span class="w">    </span><span class="nf">ldr</span><span class="w"> </span><span class="no">r1</span><span class="p">,[</span><span class="no">r0</span><span class="p">]</span><span class="w">                 </span><span class="cm">/* read the register */</span>
+</span><span id="__span-24-15"><a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a><span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">r2</span><span class="p">,</span><span class="w"> </span><span class="c1">#L2CCControl        /* set the enable bit */</span>
+</span><span id="__span-24-16"><a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="no">r1</span><span class="p">,</span><span class="no">r2</span>
+</span><span id="__span-24-17"><a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a><span class="w">    </span><span class="nf">str</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="no">r0</span><span class="p">]</span><span class="w">                </span><span class="cm">/* enable the L2 Caches */</span>
+</span></code></pre></div>
+Здесь осуществляется разблокировка доступа по записи в регистры группы <code>SCLR</code>, запись "магического" значения <code>0x0020202</code> (такое значение требуется по документации) в регистр по адресу <code>0xf000a1c</code> со странным названием <code>reserved</code> и последующая блокировка. Последнее действие - разрешение работы L2 кэша.</p>
+<h3 id="_8">Завершение низкоуровневой инициализации<a class="headerlink" href="#_8" title="Permanent link">🔗</a></h3>
+<h4 id="cp10-cp11">Разрешение работы сопроцессоров CP10 и CP11<a class="headerlink" href="#cp10-cp11" title="Permanent link">🔗</a></h4>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">    </span><span class="nf">mrc</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="no">c1</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">       </span><span class="cm">/* read cp access control register (CACR) into r1 */</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="c1">#(0xf &lt;&lt; 20)        /* enable full access for p10 &amp; p11 */</span>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="no">c1</span><span class="p">,</span><span class="w"> </span><span class="no">c0</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">       </span><span class="cm">/* write back into CACR */</span>
+</span></code></pre></div>
+<h4 id="vfp">Разрешение работы VFP<a class="headerlink" href="#vfp" title="Permanent link">🔗</a></h4>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="w">    </span><span class="cm">/* enable vfp */</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">    </span><span class="nf">fmrx</span><span class="w">    </span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="no">FPEXC</span><span class="w">           </span><span class="cm">/* read the exception register */</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r1</span><span class="p">,</span><span class="no">r1</span><span class="p">,</span><span class="w"> </span><span class="c1">#FPEXC_EN        /* set VFP enable bit, leave the others in orig state */</span>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">    </span><span class="nf">fmxr</span><span class="w">    </span><span class="no">FPEXC</span><span class="p">,</span><span class="w"> </span><span class="no">r1</span><span class="w">           </span><span class="cm">/* write back the exception register */</span>
+</span></code></pre></div>
+<h4 id="_9">Включение предсказателя ветвлений<a class="headerlink" href="#_9" title="Permanent link">🔗</a></h4>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="w">    </span><span class="nf">mrc</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="no">r0</span><span class="p">,</span><span class="no">c1</span><span class="p">,</span><span class="no">c0</span><span class="p">,</span><span class="mi">0</span><span class="w">        </span><span class="cm">/* flow prediction enable */</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="c1">#(0x01 &lt;&lt; 11)   /* #0x8000 */</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="no">r0</span><span class="p">,</span><span class="no">c1</span><span class="p">,</span><span class="no">c0</span><span class="p">,</span><span class="mi">0</span>
+</span></code></pre></div>
+<h4 id="l2_1">Коррекция настроек кэша L2<a class="headerlink" href="#l2_1" title="Permanent link">🔗</a></h4>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="w">    </span><span class="nf">mrc</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="no">r0</span><span class="p">,</span><span class="no">c1</span><span class="p">,</span><span class="no">c0</span><span class="p">,</span><span class="mi">1</span><span class="w">        </span><span class="cm">/* read Auxiliary Control Register */</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="c1">#(0x1 &lt;&lt; 2)     /* enable Dside prefetch */</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span><span class="nf">orr</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="c1">#(0x1 &lt;&lt; 1)     /* enable L2 Prefetch hint */</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">    </span><span class="nf">mcr</span><span class="w"> </span><span class="no">p15</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="no">r0</span><span class="p">,</span><span class="no">c1</span><span class="p">,</span><span class="no">c0</span><span class="p">,</span><span class="mi">1</span><span class="w">        </span><span class="cm">/* write Auxiliary Control Register */</span>
+</span></code></pre></div>
+<h4 id="abort">Разрешение исключений типа Abort<a class="headerlink" href="#abort" title="Permanent link">🔗</a></h4>
+<div class="language-asm highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="w">    </span><span class="nf">mrs</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">cpsr</span><span class="w">                </span><span class="cm">/* get the current PSR */</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span><span class="nf">bic</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span><span class="p">,</span><span class="w"> </span><span class="mi">#0</span><span class="no">x100</span><span class="w">          </span><span class="cm">/* enable asynchronous abort exception */</span>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">    </span><span class="nf">msr</span><span class="w"> </span><span class="no">cpsr_xsf</span><span class="p">,</span><span class="w"> </span><span class="no">r0</span>
+</span></code></pre></div>
+<h4 id="_10">Приведение некоторых регистров сопроцессоров в детерминированное состояние<a class="headerlink" href="#_10" title="Permanent link">🔗</a></h4>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>   // Clear cp15 regs with unknown reset values
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>    mov r0, #0x0
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>    mcr p15, 0, r0, c5, c0, 0         //  DFSR
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>    mcr p15, 0, r0, c5, c0, 1         //  IFSR
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>    mcr p15, 0, r0, c6, c0, 0         //  DFAR
+</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>    mcr p15, 0, r0, c6, c0, 2         //  IFAR
+</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>    mcr p15, 0, r0, c9, c13, 2        //  PMXEVCNTR
+</span><span id="__span-30-8"><a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>    mcr p15, 0, r0, c13, c0, 2        //  TPIDRURW
+</span><span id="__span-30-9"><a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a>    mcr p15, 0, r0, c13, c0, 3        //  TPIDRURO
+</span><span id="__span-30-10"><a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a>
+</span><span id="__span-30-11"><a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a>    // Reset and start Cycle Counter
+</span><span id="__span-30-12"><a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a>    mov r2, #0x80000000               //  clear overflow */
+</span><span id="__span-30-13"><a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a>    mcr p15, 0, r2, c9, c12, 3        //
+</span><span id="__span-30-14"><a id="__codelineno-30-14" name="__codelineno-30-14" href="#__codelineno-30-14"></a>    mov r2, #0xd                      //  D, C, E */
+</span><span id="__span-30-15"><a id="__codelineno-30-15" name="__codelineno-30-15" href="#__codelineno-30-15"></a>    mcr p15, 0, r2, c9, c12, 0        //
+</span><span id="__span-30-16"><a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a>    mov r2, #0x80000000               //  enable cycle counter */
+</span><span id="__span-30-17"><a id="__codelineno-30-17" name="__codelineno-30-17" href="#__codelineno-30-17"></a>    mcr p15, 0, r2, c9, c12, 1        //
+</span></code></pre></div>
+<p>Действия в первой части понятны из комментариев. Во второй части:</p>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Register</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mcr   p15, 0, r2, c9, c12, 3</code></td>
+<td><code>PMOVSR</code></td>
+<td>Overflow Flag Status Register. Запись <code>0x80000000</code><br>сбрасывает бит <code>C</code>, который является флагом<br>переполнения счётчика циклов (Cycle Counter)</td>
+</tr>
+<tr>
+<td><code>mcr   p15, 0, r2, c9, c12, 0</code></td>
+<td><code>PMCR</code></td>
+<td>Performance Monitor Control Register. Запись <code>0xd</code> означает:<ul><li><code>E</code>: All counters enabled</li><li><code>C</code>: Cycle counter reset</li><li><code>D</code>: Cycle counter clock divider, <code>1</code> = <code>PMCCNTR</code> counts once<br>every 64 cycles, <code>0</code> = <code>PMCCNTR</code> counts every clock cycle</li></ul></td>
+</tr>
+<tr>
+<td><code>mcr   p15, 0, r2, c9, c12, 1</code></td>
+<td><code>PMCNTENSET</code></td>
+<td>Performance Monitors Count Enable Set register.<br>Запись значения <code>0x80000000</code> устанавливает бит <code>C</code>,<br>который включает <code>PMCCONTR</code> cycle counter.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_11">Старт программы<a class="headerlink" href="#_11" title="Permanent link">🔗</a></h2>
+<p>После этого управление передаётся подпрограмме <code>_start</code> (исходный файл <code>startup.c</code>), который выполняет функции стандартного стартапа любой <code>C/C++</code> программы:</p>
+<ul>
+<li>статическую инициализацию (инициализация глобальных переменных);</li>
+<li>динамическую инициализацию (вызов конструкторов глобальных объектов).</li>
+</ul>
+<p>Но перед этим осуществляется инициализация периферийных устройств путём вызова сгенерированной пакетом <strong>Vivado</strong> функцией <code>ps7_init()</code>.</p>
+<p>Исходный код этой функции простой и компактный:</p>
+<div class="language-cpp highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">_start</span><span class="p">()</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="p">{</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="w"> </span><span class="n">__low_level_init</span><span class="p">()</span><span class="w"> </span><span class="p">)</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="w">        </span><span class="n">ps7_init</span><span class="p">();</span><span class="w">                                                                   </span><span class="c1">//</span>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="w">        </span><span class="n">memset</span><span class="p">(</span><span class="n">__bss_start</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">__bss_end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">__bss_start</span><span class="p">);</span><span class="w">                              </span><span class="c1">// zero-fill uninitialized variables</span>
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="w">        </span><span class="n">memset</span><span class="p">(</span><span class="n">__ddr_code_start</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">__ddr_code_end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">__ddr_code_start</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span><span class="w">          </span><span class="c1">// copy initialized variables</span>
+</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="w">        </span><span class="n">memcpy</span><span class="p">(</span><span class="n">__ddr_code_start</span><span class="p">,</span><span class="w"> </span><span class="n">__ddr_src_start</span><span class="p">,</span><span class="w"> </span><span class="n">__ddr_code_end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">__ddr_code_start</span><span class="p">);</span><span class="w"> </span><span class="c1">// copy initialized variables</span>
+</span><span id="__span-31-9"><a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a><span class="w">        </span><span class="n">Xil_DCacheFlush</span><span class="p">();</span>
+</span><span id="__span-31-10"><a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a><span class="w">        </span><span class="n">__libc_init_array</span><span class="p">();</span><span class="w">                                                          </span><span class="c1">// low-level init &amp; ctor loop</span>
+</span><span id="__span-31-11"><a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-31-12"><a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a><span class="w">    </span><span class="n">main</span><span class="p">();</span>
+</span><span id="__span-31-13"><a id="__codelineno-31-13" name="__codelineno-31-13" href="#__codelineno-31-13"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="ps">Инициализация периферийных устройств PS<a class="headerlink" href="#ps" title="Permanent link">🔗</a></h3>
+<h4 id="_12">Общие сведения<a class="headerlink" href="#_12" title="Permanent link">🔗</a></h4>
+<p>Инициализация периферийных устройств организована достаточно просто: инструментальные средства <strong>Vivado</strong> генерируют файлы, код которых отвечает за инициализацию всей периферии:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ps7_init.h</code></td>
+<td>Определения макросов и прототипов функций</td>
+</tr>
+<tr>
+<td><code>ps7_init.c</code></td>
+<td>Код и данные для инициализации</td>
+</tr>
+<tr>
+<td><code>ps7_init.tcl</code></td>
+<td>Код для IDE для эмуляции инициализации загрузчиком, <br>необходим для отладки пользовательского приложения</td>
+</tr>
+</tbody>
+</table>
+<h4 id="_13">Процесс инициализации<a class="headerlink" href="#_13" title="Permanent link">🔗</a></h4>
+<h5 id="_14">Краткое описание<a class="headerlink" href="#_14" title="Permanent link">🔗</a></h5>
+<p>Процесс инициализации осуществляется путём вызова функции <code>ps7_init()</code>. Функция состоит из двух логических частей:</p>
+<ol>
+<li>Подготовка данных.</li>
+<li>Инициализация.</li>
+</ol>
+<p>Подготовка данных сводится к выбору в соответствии с ревизией используемой целевой микросхемы SoC набора данных, это осуществляется путём присвоения соответствующих значений указателям на структуры данных.</p>
+<p>Собственно инициализация выполняется путём загрузки данных в регистры периферийных устройств. Процесс загрузки организован как выполнение простых инструкций неким виртуальным процессором. Сами инструкции "записаны" в структурах данных. Такой подход обеспечивает относительную простоту реализации и универсальность, хотя и даёт заметные накладные расходы как по размеру данных, так и по времени выполнения.</p>
+<h5 id="_15">Структуры данных<a class="headerlink" href="#_15" title="Permanent link">🔗</a></h5>
+<p>В файле <code>ps7_init.h</code> определены следующие макросы:</p>
+<div class="language-C highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="cp">#define OPCODE_EXIT       0U</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="cp">#define OPCODE_CLEAR      1U</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="cp">#define OPCODE_WRITE      2U</span>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="cp">#define OPCODE_MASKWRITE  3U</span>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="cp">#define OPCODE_MASKPOLL   4U</span>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="cp">#define OPCODE_MASKDELAY  5U</span>
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>
+</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="cp">#define EMIT_EXIT()                   ( (OPCODE_EXIT      &lt;&lt; 4 ) | 0 )</span>
+</span><span id="__span-32-9"><a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a><span class="cp">#define EMIT_CLEAR(addr)              ( (OPCODE_CLEAR     &lt;&lt; 4 ) | 1 ) , addr</span>
+</span><span id="__span-32-10"><a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a><span class="cp">#define EMIT_WRITE(addr,val)          ( (OPCODE_WRITE     &lt;&lt; 4 ) | 2 ) , addr, val</span>
+</span><span id="__span-32-11"><a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a><span class="cp">#define EMIT_MASKWRITE(addr,mask,val) ( (OPCODE_MASKWRITE &lt;&lt; 4 ) | 3 ) , addr, mask, val</span>
+</span><span id="__span-32-12"><a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a><span class="cp">#define EMIT_MASKPOLL(addr,mask)      ( (OPCODE_MASKPOLL  &lt;&lt; 4 ) | 2 ) , addr, mask</span>
+</span><span id="__span-32-13"><a id="__codelineno-32-13" name="__codelineno-32-13" href="#__codelineno-32-13"></a><span class="cp">#define EMIT_MASKDELAY(addr,mask)     ( (OPCODE_MASKDELAY &lt;&lt; 4 ) | 2 ) , addr, mask</span>
+</span></code></pre></div>
+<p>Они используются для формирования значений элементов структур данных. Собственно, структуры данных представляют собой массивы, состоящие из цепочек слов, образующих "инструкции" некоего виртуального процессора. Длина цепочек-инструкций варьируется от 1 до 4. Первое слово всегда комбинация опкода (старший нибл младшего байта) и количества аргументов (младший нибл младшего байта). Из определения макросов видно, что инструкция <code>EXIT</code> имеет длину в одно слово, <code>CLEAR</code> - 2 слова, <code>MASKWRITE</code> - 4 слова, остальные - по 3 слова.</p>
+<p>Все массивы инструкций организованы одинаково - см. пример (фрагмент (начало и окончание) массива для инициализации устройства ФАПЧ):
+<div class="language-C highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">ps7_pll_init_data_3_0</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="w">    </span><span class="c1">// START: top</span>
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="w">    </span><span class="c1">// .. START: SLCR SETTINGS</span>
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="w">    </span><span class="c1">// .. UNLOCK_KEY = 0XDF0D</span>
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="w">    </span><span class="c1">// .. ==&gt; 0XF8000008[15:0] = 0x0000DF0DU</span>
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a><span class="w">    </span><span class="c1">// ..     ==&gt; MASK : 0x0000FFFFU    VAL : 0x0000DF0DU</span>
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="w">    </span><span class="c1">// .. </span>
+</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a><span class="w">    </span><span class="n">EMIT_MASKWRITE</span><span class="p">(</span><span class="mh">0XF8000008</span><span class="p">,</span><span class="w"> </span><span class="mh">0x0000FFFFU</span><span class="w"> </span><span class="p">,</span><span class="mh">0x0000DF0DU</span><span class="p">),</span>
+</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a><span class="w">    </span><span class="c1">// .. FINISH: SLCR SETTINGS</span>
+</span><span id="__span-33-10"><a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a><span class="w">    </span><span class="c1">// .. START: PLL SLCR REGISTERS</span>
+</span><span id="__span-33-11"><a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a><span class="w">    </span><span class="c1">// .. .. START: ARM PLL INIT</span>
+</span><span id="__span-33-12"><a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a><span class="w">    </span><span class="c1">// .. .. PLL_RES = 0x4</span>
+</span><span id="__span-33-13"><a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a><span class="w">    </span><span class="c1">// .. .. ==&gt; 0XF8000110[7:4] = 0x00000004U</span>
+</span><span id="__span-33-14"><a id="__codelineno-33-14" name="__codelineno-33-14" href="#__codelineno-33-14"></a><span class="w">    </span><span class="c1">// .. ..     ==&gt; MASK : 0x000000F0U    VAL : 0x00000040U</span>
+</span><span id="__span-33-15"><a id="__codelineno-33-15" name="__codelineno-33-15" href="#__codelineno-33-15"></a><span class="w">    </span><span class="c1">// .. .. PLL_CP = 0x2</span>
+</span><span id="__span-33-16"><a id="__codelineno-33-16" name="__codelineno-33-16" href="#__codelineno-33-16"></a><span class="w">    </span><span class="c1">// .. .. ==&gt; 0XF8000110[11:8] = 0x00000002U</span>
+</span><span id="__span-33-17"><a id="__codelineno-33-17" name="__codelineno-33-17" href="#__codelineno-33-17"></a><span class="w">    </span><span class="c1">// .. ..     ==&gt; MASK : 0x00000F00U    VAL : 0x00000200U</span>
+</span><span id="__span-33-18"><a id="__codelineno-33-18" name="__codelineno-33-18" href="#__codelineno-33-18"></a><span class="w">    </span><span class="c1">// .. .. LOCK_CNT = 0xfa</span>
+</span><span id="__span-33-19"><a id="__codelineno-33-19" name="__codelineno-33-19" href="#__codelineno-33-19"></a><span class="w">    </span><span class="c1">// .. .. ==&gt; 0XF8000110[21:12] = 0x000000FAU</span>
+</span><span id="__span-33-20"><a id="__codelineno-33-20" name="__codelineno-33-20" href="#__codelineno-33-20"></a><span class="w">    </span><span class="c1">// .. ..     ==&gt; MASK : 0x003FF000U    VAL : 0x000FA000U</span>
+</span><span id="__span-33-21"><a id="__codelineno-33-21" name="__codelineno-33-21" href="#__codelineno-33-21"></a><span class="w">    </span><span class="c1">// .. .. </span>
+</span><span id="__span-33-22"><a id="__codelineno-33-22" name="__codelineno-33-22" href="#__codelineno-33-22"></a><span class="w">    </span><span class="n">EMIT_MASKWRITE</span><span class="p">(</span><span class="mh">0XF8000110</span><span class="p">,</span><span class="w"> </span><span class="mh">0x003FFFF0U</span><span class="w"> </span><span class="p">,</span><span class="mh">0x000FA240U</span><span class="p">),</span>
+</span><span id="__span-33-23"><a id="__codelineno-33-23" name="__codelineno-33-23" href="#__codelineno-33-23"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-33-24"><a id="__codelineno-33-24" name="__codelineno-33-24" href="#__codelineno-33-24"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-33-25"><a id="__codelineno-33-25" name="__codelineno-33-25" href="#__codelineno-33-25"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-33-26"><a id="__codelineno-33-26" name="__codelineno-33-26" href="#__codelineno-33-26"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-33-27"><a id="__codelineno-33-27" name="__codelineno-33-27" href="#__codelineno-33-27"></a><span class="w">    </span><span class="c1">//</span>
+</span><span id="__span-33-28"><a id="__codelineno-33-28" name="__codelineno-33-28" href="#__codelineno-33-28"></a><span class="w">    </span><span class="n">EMIT_EXIT</span><span class="p">(),</span>
+</span><span id="__span-33-29"><a id="__codelineno-33-29" name="__codelineno-33-29" href="#__codelineno-33-29"></a><span class="p">};</span>
+</span></code></pre></div>
+В этом примере макрос <code>EMIT_MASKWRITE(0XF8000008, 0x0000FFFFU ,0x0000DF0DU)</code> генерирует последовательность слов:</p>
+<ol>
+<li><code>0x00000033</code>: опкод и количество аргументов</li>
+<li><code>0xf8000008</code>: адрес регистра</li>
+<li><code>0x0000ffff</code>: маска, накладываемая на записываемое в регистр слово данных</li>
+<li><code>0x0000df0d</code>: слово данных</li>
+</ol>
+<p>При применении этой "инструкции" про указанном адресу будет записано число <code>0xdf0d</code> в младшие 16 бит регистра, старшие 16 бит останутся без изменений, это обеспечивается применением маски - обновляются только те биты, в позиции которых в значении маски стоят 1. В данном конкретном случае осуществляется запись в регистр <code>SCLR_UNLOCK</code> специального кода, который разблокирует доступ по записи к группе регистров <code>sclr</code>.</p>
+<p>Остальные инструкции генерируются аналогично. Для удобства в комментариях к инструкциям поясняется, какие биты, флаги, поля регистров модифицируются.</p>
+<p>Размер файла <code>ps7_init.c</code> достаточно большой (более полумегабайта), но страшного в этом ничего нет - львиную долю этого объёма занимаются массивы инструкций и комментарии к ним, а таких массивов там полтора десятка: три ревизии, для каждой инициализация  MIO, PLL, Clock, DDR, Peripherals.</p>
+<h5 id="_16">Загрузка<a class="headerlink" href="#_16" title="Permanent link">🔗</a></h5>
+<p>Весь процесс инициализации сводится к выполнению инструкций из массивов:
+<div class="language-C highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="kt">int</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="nf">ps7_init</span><span class="p">()</span><span class="w"> </span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="p">{</span>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="w">  </span><span class="c1">// Get the PS_VERSION on run time</span>
+</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="w">  </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">si_ver</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ps7GetSiliconVersion</span><span class="w"> </span><span class="p">();</span>
+</span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">ret</span><span class="p">;</span>
+</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a>
+</span><span id="__span-34-8"><a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a><span class="w">  </span><span class="c1">// инициализация указателей на массивы инструкций</span>
+</span><span id="__span-34-9"><a id="__codelineno-34-9" name="__codelineno-34-9" href="#__codelineno-34-9"></a><span class="w">  </span><span class="c1">// в соответствии с ревизией кристалла</span>
+</span><span id="__span-34-10"><a id="__codelineno-34-10" name="__codelineno-34-10" href="#__codelineno-34-10"></a><span class="w">  </span><span class="c1">// ...  </span>
+</span><span id="__span-34-11"><a id="__codelineno-34-11" name="__codelineno-34-11" href="#__codelineno-34-11"></a><span class="w">  </span><span class="c1">// ...  </span>
+</span><span id="__span-34-12"><a id="__codelineno-34-12" name="__codelineno-34-12" href="#__codelineno-34-12"></a><span class="w">  </span><span class="c1">// ...  </span>
+</span><span id="__span-34-13"><a id="__codelineno-34-13" name="__codelineno-34-13" href="#__codelineno-34-13"></a>
+</span><span id="__span-34-14"><a id="__codelineno-34-14" name="__codelineno-34-14" href="#__codelineno-34-14"></a><span class="w">  </span><span class="c1">// MIO init</span>
+</span><span id="__span-34-15"><a id="__codelineno-34-15" name="__codelineno-34-15" href="#__codelineno-34-15"></a><span class="w">  </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ps7_config</span><span class="w"> </span><span class="p">(</span><span class="n">ps7_mio_init_data</span><span class="p">);</span><span class="w">  </span>
+</span><span id="__span-34-16"><a id="__codelineno-34-16" name="__codelineno-34-16" href="#__codelineno-34-16"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">PS7_INIT_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ret</span><span class="p">;</span>
+</span><span id="__span-34-17"><a id="__codelineno-34-17" name="__codelineno-34-17" href="#__codelineno-34-17"></a>
+</span><span id="__span-34-18"><a id="__codelineno-34-18" name="__codelineno-34-18" href="#__codelineno-34-18"></a><span class="w">  </span><span class="c1">// PLL init</span>
+</span><span id="__span-34-19"><a id="__codelineno-34-19" name="__codelineno-34-19" href="#__codelineno-34-19"></a><span class="w">  </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ps7_config</span><span class="w"> </span><span class="p">(</span><span class="n">ps7_pll_init_data</span><span class="p">);</span><span class="w"> </span>
+</span><span id="__span-34-20"><a id="__codelineno-34-20" name="__codelineno-34-20" href="#__codelineno-34-20"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">PS7_INIT_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ret</span><span class="p">;</span>
+</span><span id="__span-34-21"><a id="__codelineno-34-21" name="__codelineno-34-21" href="#__codelineno-34-21"></a>
+</span><span id="__span-34-22"><a id="__codelineno-34-22" name="__codelineno-34-22" href="#__codelineno-34-22"></a><span class="w">  </span><span class="c1">// Clock init</span>
+</span><span id="__span-34-23"><a id="__codelineno-34-23" name="__codelineno-34-23" href="#__codelineno-34-23"></a><span class="w">  </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ps7_config</span><span class="w"> </span><span class="p">(</span><span class="n">ps7_clock_init_data</span><span class="p">);</span>
+</span><span id="__span-34-24"><a id="__codelineno-34-24" name="__codelineno-34-24" href="#__codelineno-34-24"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">PS7_INIT_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ret</span><span class="p">;</span>
+</span><span id="__span-34-25"><a id="__codelineno-34-25" name="__codelineno-34-25" href="#__codelineno-34-25"></a>
+</span><span id="__span-34-26"><a id="__codelineno-34-26" name="__codelineno-34-26" href="#__codelineno-34-26"></a><span class="w">  </span><span class="c1">// DDR init</span>
+</span><span id="__span-34-27"><a id="__codelineno-34-27" name="__codelineno-34-27" href="#__codelineno-34-27"></a><span class="w">  </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ps7_config</span><span class="w"> </span><span class="p">(</span><span class="n">ps7_ddr_init_data</span><span class="p">);</span>
+</span><span id="__span-34-28"><a id="__codelineno-34-28" name="__codelineno-34-28" href="#__codelineno-34-28"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">PS7_INIT_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ret</span><span class="p">;</span>
+</span><span id="__span-34-29"><a id="__codelineno-34-29" name="__codelineno-34-29" href="#__codelineno-34-29"></a>
+</span><span id="__span-34-30"><a id="__codelineno-34-30" name="__codelineno-34-30" href="#__codelineno-34-30"></a><span class="w">  </span><span class="c1">// Peripherals init</span>
+</span><span id="__span-34-31"><a id="__codelineno-34-31" name="__codelineno-34-31" href="#__codelineno-34-31"></a><span class="w">  </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ps7_config</span><span class="w"> </span><span class="p">(</span><span class="n">ps7_peripherals_init_data</span><span class="p">);</span>
+</span><span id="__span-34-32"><a id="__codelineno-34-32" name="__codelineno-34-32" href="#__codelineno-34-32"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">PS7_INIT_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ret</span><span class="p">;</span>
+</span><span id="__span-34-33"><a id="__codelineno-34-33" name="__codelineno-34-33" href="#__codelineno-34-33"></a><span class="w">  </span><span class="c1">//xil_printf (&quot;\n PCW Silicon Version : %d.0&quot;, pcw_ver);</span>
+</span><span id="__span-34-34"><a id="__codelineno-34-34" name="__codelineno-34-34" href="#__codelineno-34-34"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PS7_INIT_SUCCESS</span><span class="p">;</span>
+</span><span id="__span-34-35"><a id="__codelineno-34-35" name="__codelineno-34-35" href="#__codelineno-34-35"></a><span class="p">}</span>
+</span></code></pre></div>
+Из кода функции видно, что сначала инициализируются регистры <code>MIO</code>, затем <code>PLL</code>, дерево тактовых частот, <code>DDR</code>, периферийных устройств. Сам процесс загрузки данных в регистры во всех случаях один и тот же и выполняется с помощью функции <code>ps7_config()</code>. Фрагмент этой функции, отвечающий за собственно выполнение инструкций:</p>
+<p><div class="language-C highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="w">     </span><span class="p">...</span><span class="w">   </span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="w">     </span><span class="p">...</span><span class="w">   </span>
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">     </span><span class="p">...</span><span class="w">   </span>
+</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="w">     </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">opcode</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>
+</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a><span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">OPCODE_EXIT</span><span class="p">:</span>
+</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="w">            </span><span class="n">finish</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PS7_INIT_SUCCESS</span><span class="p">;</span>
+</span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a><span class="w">            </span><span class="k">break</span><span class="p">;</span>
+</span><span id="__span-35-9"><a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a>
+</span><span id="__span-35-10"><a id="__codelineno-35-10" name="__codelineno-35-10" href="#__codelineno-35-10"></a><span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">OPCODE_CLEAR</span><span class="p">:</span>
+</span><span id="__span-35-11"><a id="__codelineno-35-11" name="__codelineno-35-11" href="#__codelineno-35-11"></a><span class="w">            </span><span class="n">addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span id="__span-35-12"><a id="__codelineno-35-12" name="__codelineno-35-12" href="#__codelineno-35-12"></a><span class="w">            </span><span class="o">*</span><span class="n">addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-35-13"><a id="__codelineno-35-13" name="__codelineno-35-13" href="#__codelineno-35-13"></a><span class="w">            </span><span class="k">break</span><span class="p">;</span>
+</span><span id="__span-35-14"><a id="__codelineno-35-14" name="__codelineno-35-14" href="#__codelineno-35-14"></a>
+</span><span id="__span-35-15"><a id="__codelineno-35-15" name="__codelineno-35-15" href="#__codelineno-35-15"></a><span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">OPCODE_WRITE</span><span class="p">:</span>
+</span><span id="__span-35-16"><a id="__codelineno-35-16" name="__codelineno-35-16" href="#__codelineno-35-16"></a><span class="w">            </span><span class="n">addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span id="__span-35-17"><a id="__codelineno-35-17" name="__codelineno-35-17" href="#__codelineno-35-17"></a><span class="w">            </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span><span id="__span-35-18"><a id="__codelineno-35-18" name="__codelineno-35-18" href="#__codelineno-35-18"></a><span class="w">            </span><span class="o">*</span><span class="n">addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">val</span><span class="p">;</span>
+</span><span id="__span-35-19"><a id="__codelineno-35-19" name="__codelineno-35-19" href="#__codelineno-35-19"></a><span class="w">            </span><span class="k">break</span><span class="p">;</span>
+</span><span id="__span-35-20"><a id="__codelineno-35-20" name="__codelineno-35-20" href="#__codelineno-35-20"></a>
+</span><span id="__span-35-21"><a id="__codelineno-35-21" name="__codelineno-35-21" href="#__codelineno-35-21"></a><span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">OPCODE_MASKWRITE</span><span class="p">:</span>
+</span><span id="__span-35-22"><a id="__codelineno-35-22" name="__codelineno-35-22" href="#__codelineno-35-22"></a><span class="w">            </span><span class="n">addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span id="__span-35-23"><a id="__codelineno-35-23" name="__codelineno-35-23" href="#__codelineno-35-23"></a><span class="w">            </span><span class="n">mask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span><span id="__span-35-24"><a id="__codelineno-35-24" name="__codelineno-35-24" href="#__codelineno-35-24"></a><span class="w">            </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span><span id="__span-35-25"><a id="__codelineno-35-25" name="__codelineno-35-25" href="#__codelineno-35-25"></a><span class="w">            </span><span class="o">*</span><span class="n">addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">mask</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="o">*</span><span class="n">addr</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="o">~</span><span class="n">mask</span><span class="p">);</span>
+</span><span id="__span-35-26"><a id="__codelineno-35-26" name="__codelineno-35-26" href="#__codelineno-35-26"></a><span class="w">            </span><span class="k">break</span><span class="p">;</span>
+</span><span id="__span-35-27"><a id="__codelineno-35-27" name="__codelineno-35-27" href="#__codelineno-35-27"></a>
+</span><span id="__span-35-28"><a id="__codelineno-35-28" name="__codelineno-35-28" href="#__codelineno-35-28"></a><span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">OPCODE_MASKPOLL</span><span class="p">:</span>
+</span><span id="__span-35-29"><a id="__codelineno-35-29" name="__codelineno-35-29" href="#__codelineno-35-29"></a><span class="w">            </span><span class="n">addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span id="__span-35-30"><a id="__codelineno-35-30" name="__codelineno-35-30" href="#__codelineno-35-30"></a><span class="w">            </span><span class="n">mask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span><span id="__span-35-31"><a id="__codelineno-35-31" name="__codelineno-35-31" href="#__codelineno-35-31"></a><span class="w">            </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-35-32"><a id="__codelineno-35-32" name="__codelineno-35-32" href="#__codelineno-35-32"></a><span class="w">            </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="o">*</span><span class="n">addr</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">mask</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-35-33"><a id="__codelineno-35-33" name="__codelineno-35-33" href="#__codelineno-35-33"></a><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">PS7_MASK_POLL_TIME</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-35-34"><a id="__codelineno-35-34" name="__codelineno-35-34" href="#__codelineno-35-34"></a><span class="w">                    </span><span class="n">finish</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PS7_INIT_TIMEOUT</span><span class="p">;</span>
+</span><span id="__span-35-35"><a id="__codelineno-35-35" name="__codelineno-35-35" href="#__codelineno-35-35"></a><span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+</span><span id="__span-35-36"><a id="__codelineno-35-36" name="__codelineno-35-36" href="#__codelineno-35-36"></a><span class="w">                </span><span class="p">}</span>
+</span><span id="__span-35-37"><a id="__codelineno-35-37" name="__codelineno-35-37" href="#__codelineno-35-37"></a><span class="w">                </span><span class="n">i</span><span class="o">++</span><span class="p">;</span>
+</span><span id="__span-35-38"><a id="__codelineno-35-38" name="__codelineno-35-38" href="#__codelineno-35-38"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-35-39"><a id="__codelineno-35-39" name="__codelineno-35-39" href="#__codelineno-35-39"></a><span class="w">            </span><span class="k">break</span><span class="p">;</span>
+</span><span id="__span-35-40"><a id="__codelineno-35-40" name="__codelineno-35-40" href="#__codelineno-35-40"></a><span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">OPCODE_MASKDELAY</span><span class="p">:</span>
+</span><span id="__span-35-41"><a id="__codelineno-35-41" name="__codelineno-35-41" href="#__codelineno-35-41"></a><span class="w">            </span><span class="n">addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span id="__span-35-42"><a id="__codelineno-35-42" name="__codelineno-35-42" href="#__codelineno-35-42"></a><span class="w">            </span><span class="n">mask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span><span id="__span-35-43"><a id="__codelineno-35-43" name="__codelineno-35-43" href="#__codelineno-35-43"></a><span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">delay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_number_of_cycles_for_delay</span><span class="p">(</span><span class="n">mask</span><span class="p">);</span>
+</span><span id="__span-35-44"><a id="__codelineno-35-44" name="__codelineno-35-44" href="#__codelineno-35-44"></a><span class="w">            </span><span class="n">perf_reset_and_start_timer</span><span class="p">();</span><span class="w"> </span>
+</span><span id="__span-35-45"><a id="__codelineno-35-45" name="__codelineno-35-45" href="#__codelineno-35-45"></a><span class="w">            </span><span class="k">while</span><span class="w"> </span><span class="p">((</span><span class="o">*</span><span class="n">addr</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">delay</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-35-46"><a id="__codelineno-35-46" name="__codelineno-35-46" href="#__codelineno-35-46"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-35-47"><a id="__codelineno-35-47" name="__codelineno-35-47" href="#__codelineno-35-47"></a><span class="w">            </span><span class="k">break</span><span class="p">;</span>
+</span><span id="__span-35-48"><a id="__codelineno-35-48" name="__codelineno-35-48" href="#__codelineno-35-48"></a><span class="w">        </span><span class="k">default</span><span class="o">:</span>
+</span><span id="__span-35-49"><a id="__codelineno-35-49" name="__codelineno-35-49" href="#__codelineno-35-49"></a><span class="w">            </span><span class="n">finish</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PS7_INIT_CORRUPT</span><span class="p">;</span>
+</span><span id="__span-35-50"><a id="__codelineno-35-50" name="__codelineno-35-50" href="#__codelineno-35-50"></a><span class="w">            </span><span class="k">break</span><span class="p">;</span>
+</span><span id="__span-35-51"><a id="__codelineno-35-51" name="__codelineno-35-51" href="#__codelineno-35-51"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-35-52"><a id="__codelineno-35-52" name="__codelineno-35-52" href="#__codelineno-35-52"></a><span class="w">     </span><span class="p">...</span><span class="w">   </span>
+</span><span id="__span-35-53"><a id="__codelineno-35-53" name="__codelineno-35-53" href="#__codelineno-35-53"></a><span class="w">     </span><span class="p">...</span><span class="w">   </span>
+</span><span id="__span-35-54"><a id="__codelineno-35-54" name="__codelineno-35-54" href="#__codelineno-35-54"></a><span class="w">     </span><span class="p">...</span><span class="w">   </span>
+</span></code></pre></div>
+Инструкция с опкодом <code>OPCODE_EXIT</code> завершает циклический процесс выполнения инструкций. Такая инструкция помещается в конец массива.</p>
+<p>Инструкция с опкодом <code>OPCODE_CLEAR</code> загружает в регистр по адресу значение <code>0</code>.</p>
+<p>Инструкция с опкодом <code>OPCODE_WRITE</code> загружает в регистр по адресу значение аргумента, переданного вслед за опкодом.</p>
+<p>Инструкция с опкодом <code>OPCODE_MASK_WRITE</code> загружает в регистр по адресу значение аргумента в соответствии с маской: загружаются только те биты значения, в позиции которых в значении маски стоят <code>1</code>.</p>
+<p>Инструкция с опкодом <code>OPCODE_MASKPOLL</code> выполняет следующие действия: в цикле читает значение регистра по адресу, накладывает на это значение маску и проверяет на ноль. Как только значение регистра с маской дадут ноль, опрос прекращается. Количество циклов в опросе задаётся макросом <code>PS7_MASK_POLL_TIME</code> и составляет <code>100000000</code>. Инструкция служит для опроса значений регистров с целью определить, установился ли тот или иной бит, флаг и поле.</p>
+<p>Инструкция с опкодом <code>OPCODE_MASKDELAY</code> просто формирует задержку, длительность которой определяется значением аргумента инструкции. Задержка задаётся в миллисекундах. Задержка формируется путём сравнения значения счётного регистра глобального таймера с вычисленным значением, соответствующим указанной задержке в миллисекундах. Таймер останавливается, его счётный регистр обнуляется, затем таймер запускается и производится опрос счётного регистра таймера на предмет превышения порогового значения, после чего выполнение этой инструкции завершается. Инструкция используется для формирования задержек реального времени.</p>
+<p>Обычное для этого места действие&nbsp;– инициализация стека не производится, т.к. указатели стеков (для всех режимов процессора) проинициализированы ранее.</p>
+<p>После этого управление передаётся функции <code>main</code>.</p>
+<h2 id="main">Функция main<a class="headerlink" href="#main" title="Permanent link">🔗</a></h2>
+<p>Функция <code>main</code> выполняет подготовительные действия, необходимые для запуска основной прикладной программы, по окончании которых передаёт управление этой программе.</p>
+<p>Код функции <code>main</code> (и функции <code>load_img</code>, которая собственно осуществляет загрузку прикладной программы из флешь памяти в <strong>OCM</strong>) размещается в <strong>DDR</strong> памяти. Это сделано из-за необходимости перемещения сегментов <strong>OCM</strong> (три сегмента <strong>OCM</strong> перемещаются с адреса <code>0x00000000</code> в адрес <code>0xfffc0000</code>, образуя с четвёртым сегментом, расположенным по адресу <code>0xffff0000</code> непрерывную область памяти размером 256 кбайт)&nbsp;– работающие код и данные не могут размещаться в перемещаемых сегментах, поэтому они помещены в <strong>DDR</strong> память.</p>
+<p>Первое действие: перемещение таблицы трансляции <strong>MMU</strong> в старшие адреса <strong>OCM</strong>&nbsp;– это необходимо сделать, т.к. в дальнейшем все сегменты <strong>OCM</strong> будут перемещены в старшие адреса памяти, и текущее положение таблицы трансляции окажется не валидным.</p>
+<p>Затем выполняется настройка системы прерываний:</p>
+<ul>
+<li>инициализация массива указателей на обработчики прерываний;</li>
+<li>установка приоритетов прерываний;</li>
+<li>назначение целевого процессора для прерываний от периферийных устройств;</li>
+<li>разрешение прерываний.  </li>
+</ul>
+<p>В процессе работы функции производится печать сообщений в терминал. По окончании передачи всех символов сообщений (программа специально ждёт этого&nbsp;– это важно) производится переключение сегментов <strong>OCM</strong> с младших адресов в старшие. Для того, чтобы переключение не привело к ошибкам работы программы, необходимо, чтобы в перемещаемых сегментах не было работающего кода. Поэтому функция <code>main</code> (и другие функции, которые она использует после переключения) выполняется из DDR памяти. В режиме отладки этот код сразу загружается в DDR память, при автономной работе это делает функция стартапа перед передачей управления в функцию <code>main</code>.</p>
+<p>После этого SoC готов к загрузке прикладной основной программы, которая осуществляется путём вызова функции <code>load_img</code>.</p>
+<h3 id="_17">Загрузка прикладной программы<a class="headerlink" href="#_17" title="Permanent link">🔗</a></h3>
+<p>Образ прикладной программы хранится во внешней флешь памяти...</p>
+<p>...</p>
+<p>При разработке и отладке прикладной программы рекомендуется использовать <a href="../debug/#debug-load">эмуляцию работы загрузчика</a>.</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Следует отметить, что таблица трансляции <strong>MMU</strong> не загружается из образа прикладной программы, а помещается по указанному адресу путём таблицы трансляции <strong>MMU</strong> самого загрузчика&nbsp;– это возможно благодаря тому, что содержимое таблицы трансляции <strong>MMU</strong> загрузчика и прикладной программы идентичны.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../impl/" class="btn btn-neutral float-left" title="Implementation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../app/" class="btn btn-neutral float-right" title="Application Program">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../impl/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../app/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/wavedrom.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/skins/default.js"></script>
+      <script src="../js/wavedrom_loader.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/wavedrom@2.1.2/wavedrom.unpkg.js"></script>
+      <script src="https://wavedrom.com/skins/default.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+<script>const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});</script></body>
+</html>

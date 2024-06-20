@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Application Program - Zynq-7000 Baremetal</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Application Program";
+        var mkdocs_page_input_path = "app.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+ <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Zynq-7000 Baremetal
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">General</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Purpose</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../impl/">Implementation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Software</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../loader/">Loader</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Application Program</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#_2">Общие сведения</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#_3">Описание кода</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../debug/">Debug</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hardware</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../gic/">Interrupt Controller</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mmu/">Memory Management Unit</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Libraries</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../mmr-headers/">MMR Headers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../peripheral-lib/">Peripheral</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Zynq-7000 Baremetal</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Software</li>
+      <li class="breadcrumb-item active">Application Program</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="_1">Прикладная программа<a class="headerlink" href="#_1" title="Permanent link">🔗</a></h1>
+<h2 id="_2">Общие сведения<a class="headerlink" href="#_2" title="Permanent link">🔗</a></h2>
+<p>Программа загружается в <strong>OCM</strong> с помощью <a href="../loader">загрузчика</a> на рантайме или с помощью отладочного интерфейса <a href="../debug#debug-load">при отладке</a>. В обоих случаях выполняется основная инициализация аппаратуры как самого CPU, так и периферийных устройств. Это позволяет не делать это при запуске прикладной программы, что экономит память и сокращает время старта.</p>
+<p>В данном случае программа не выполняет каких-либо полезных функций, а носит сугубо демонстрационный характер&nbsp;– является примером-шаблоном.</p>
+<h2 id="_3">Описание кода<a class="headerlink" href="#_3" title="Permanent link">🔗</a></h2>
+<p>В качестве тестового кода используется пример <code>2-message</code> из состава <a href="https://github.com/scmrtos/scmrtos-sample-projects/tree/develop/samples/cortex/zynq7k/2-message"><strong>scmRTOS</strong></a>. Пример является достаточно минималистичным, он содержит:</p>
+<ul>
+<li>инициализацию таблицы указателей на обработчики прерываний;</li>
+<li>настройку контроллера прерываний (<strong>GIC</strong>);</li>
+<li>настройку и запуск системного таймера RTOS;</li>
+<li>инициализацию периферии (в данном примере используется только UART для печати на терминал);</li>
+<li>запуск RTOS;</li>
+<li>код процессов RTOS.</li>
+</ul>
+<p>Пример демонстрирует динамические характеристики SoC с использованием <strong>scmRTOS</strong> в контексте скорости&nbsp;– времени передачи управления. В примере задействовано 3 процесса и средство межпроцессного взаимодействия <code>OS::message</code>. Самый приоритетный процесс является приёмником сообщений (как только возникает сообщение, этот процесс сразу же получает управление). Сообщения ему посылаются из двух источников: </p>
+<ol>
+<li>хук системного таймера;</li>
+<li>другой, более низкоприоритетный процесс.</li>
+</ol>
+<p>При получении сообщения процесс может из его содержимого определить источник. Время передачи управления можно определить длительности импульса на сигнале <code>JE2</code> (<strong>Zedboard</strong>): этот сигнал устанавливается в высокий уровень источником сообщения (хук прерывания системного таймера или низкоприоритетный процесс) и сбрасывается в процессе-приёмнике. Различать сообщения можно по форме сигнала: при получении сообщения от прерывания после установки <code>JE2</code> в низкий уровень формируется дополнительный импульс.</p>
+<p>Ниже приведены результаты при следующей конфигурации SoC: выбрана схема тактирования 4:2:1, тактовые частоты:</p>
+<div class="language-text highlight"><pre><span></span><code>CPU_6x4x = 400 МГц;
+CPU_3x2x = 200 МГц;
+CPU_1x   = 100 МГц.
+</code></pre></div>
+<p>Среднее время передачи управления "прерывание-процесс" 896&nbsp;нс:</p>
+<p><br></p>
+<p><a class="glightbox" href="../img/app/message-isr-proc.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="" src="../img/app/message-isr-proc.png" style:="style:" width="800" /></a></p>
+<p><br></p>
+<p>Среднее время передачи управления "процесс -процесс" 678&nbsp;нс:</p>
+<p><br></p>
+<p><a class="glightbox" href="../img/app/message-proc-proc.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="" src="../img/app/message-proc-proc.png" style:="style:" width="800" /></a></p>
+<p><br></p>
+<p>Данный пример может быть использован как отправная точка при начале разработки любого рабочего проекта как с использованием данной RTOS (или любой другой), так и без неё.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../loader/" class="btn btn-neutral float-left" title="Loader"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../debug/" class="btn btn-neutral float-right" title="Debug">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../loader/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../debug/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/wavedrom.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/skins/default.js"></script>
+      <script src="../js/wavedrom_loader.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/wavedrom@2.1.2/wavedrom.unpkg.js"></script>
+      <script src="https://wavedrom.com/skins/default.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+<script>const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});</script></body>
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Interrupt Controller - Zynq-7000 Baremetal</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Interrupt Controller";
+        var mkdocs_page_input_path = "gic.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+ <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Zynq-7000 Baremetal
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">General</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Purpose</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../impl/">Implementation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Software</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../loader/">Loader</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../app/">Application Program</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../debug/">Debug</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hardware</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Interrupt Controller</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#_2">Общие сведения</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gic">GIC</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#_3">Структура</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#distributor">Distributor</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#cpu-interfaces">CPU Interfaces</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_4">Источники прерываний</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_5">Функционирование</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#_6">Программные прерывания</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#_7">Прерывания от периферийных устройств</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#_8">Общие действия</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#_9">Особенность прерываний "по уровню"</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mmu/">Memory Management Unit</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Libraries</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../mmr-headers/">MMR Headers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../peripheral-lib/">Peripheral</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Zynq-7000 Baremetal</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Hardware</li>
+      <li class="breadcrumb-item active">Interrupt Controller</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="_1">Система прерываний<a class="headerlink" href="#_1" title="Permanent link">🔗</a></h1>
+<h2 id="_2">Общие сведения<a class="headerlink" href="#_2" title="Permanent link">🔗</a></h2>
+<p>Система прерываний СнК <strong>Zynq7000</strong> реализована по <em>ARM Legacy Interrupt Scheme</em> (мой термин), а именно: у ядер есть два сигнала&nbsp;– "пина": <code>nIRQ</code> и <code>nFIQ</code>, при активировании уровня (низкого) ядро переходит в состояние обработки соответствующего исключения. </p>
+<p>Конкретная СнК содержит специальное устройство&nbsp;– контроллер прерываний, которое:</p>
+<ul>
+<li>агрегирует запросы на прерывания от всех периферийных устройств;</li>
+<li>выставляет запрос ядру (ядрам в случае многоядерной процессорной системы);</li>
+<li>обеспечивает интерфейс информационного обмена для процессора, через который ядро получает информацию о источниках прерываний и управляет ими.</li>
+</ul>
+<p>В случае <em>Cortex-A</em> в качестве контроллера прерываний компания <em>ARM</em> предлагает <em>Generic Interrupt Controller</em> (GIC), в СнК <strong>Zynq7000</strong> использован GIC v1.0 (PL390).</p>
+<h2 id="gic">GIC<a class="headerlink" href="#gic" title="Permanent link">🔗</a></h2>
+<h3 id="_3">Структура<a class="headerlink" href="#_3" title="Permanent link">🔗</a></h3>
+<p>Общее описание системы прерываний SoC <strong>Zynq-7000</strong> можно найти в документе <em>UG-585 Zynq 7000 SoC Technical Reference Manual, Chapter 7 Interrupts</em>.</p>
+<p>GIC состоит из двух основных частей:</p>
+<ul>
+<li>Distributor.</li>
+<li>CPU Interfaces.</li>
+</ul>
+<p>Взаимодействие процессора с контроллером прерываний осуществляется с помощью набора регистров, отображённых на память (MMR). Организационно регистры управления GIC отнесены к модулю <code>MPCORE</code>.</p>
+<p>Физически GIC в <strong>Zynq7000</strong> соединён с процессором через специально выделенную шину, чтобы задержки на общей шине не влияли на динамику работы контроллера прерываний. Сам GIC функционирует на частоте <code>CPU_3x2x</code>, т.е. на тактовой частоте домена L2.</p>
+<h4 id="distributor">Distributor<a class="headerlink" href="#distributor" title="Permanent link">🔗</a></h4>
+<p>Distributor&nbsp;– это аппаратный модуль, который агрегирует запросы на прерывание от всех периферийных устройств СнК и обеспечивает управление свойствами сигналов прерываний. Сюда относится разрешение/запрещение прерываний, управление приоритетом, настройка типов сигналов прерываний (по уровню или по перепаду) и целевых ядер.</p>
+<p>Регистры управления дистрибьютором размещаются относительно базового адреса модуля <code>MPCORE</code> со смещением <code>0x1000</code>.</p>
+<h4 id="cpu-interfaces">CPU Interfaces<a class="headerlink" href="#cpu-interfaces" title="Permanent link">🔗</a></h4>
+<p>Модуль процессорных интерфейсов в общем случае является многоканальным (по числу ядер процессора). Его назначение&nbsp;– обеспечить прохождение сигналов прерываний в зависимости от приоритета, предоставить идентификатор прерывания, который необходим для того, чтобы обработчик исключения мог вызвать соответствующую функцию-обработчик прерывания. </p>
+<p>Поскольку СнК Zynq7000 содержит двухядерный процессор, то и модуль процессорных интерфейсов тоже состоит из двух одинаковых частей. Каждое ядро процессора "видит" только свою часть модуля интерфейса.</p>
+<p>Регистры управления процессорным интерфейсом размещаются относительно базового адреса модуля <code>MPCORE</code> со смещением <code>0x100</code>.</p>
+<h3 id="_4">Источники прерываний<a class="headerlink" href="#_4" title="Permanent link">🔗</a></h3>
+<p>Существует три группы источников прерываний:</p>
+<ol>
+<li><em>Software Generated Interrupts</em> (SGI). Может быть сгенерировано до 16 программных прерываний. Генерирование прерывания производится путём записи определённого значения в специальный регистр в дистрибьюторе.</li>
+<li><em>Private Peripheral Interrupts</em> (PPI). Эта группа прерываний является частной по отношению каждому ядру, т.к. источниками этих прерываний являются периферийные устройства ядра - таймеры и каналы <code>nIRQ/nFIQ</code>.</li>
+<li><em>Shared Peripheral Interrupts</em> (SPI). Самая многочисленная группа, объединяет сигналы от всех периферийный устройство как процессорной части СнК, так и сигналы прерываний от FPGA.</li>
+</ol>
+<p>Одно из важных отличий между этими группами заключается в том, как для прерывания указывается целевое ядро. </p>
+<p>Для группы <code>PPI</code> ничего указывать не надо - это приватные для ядра источники прерываний (таймеры ядра, прямые каналы <code>nIRQ/nFIQ</code>). </p>
+<p>Для <code>SPI</code> целевое ядро указывается в регистрах <code>ICDIPTRn</code> (Interrupt Controller Distributor Interrupt Target Register). Помимо этого в конфигурационных регистрах <code>ICDICFRn</code> (Interrupt Controller Distributor Interrupt Configuration Register) есть флаг для каждого источника прерываний, который определяет, по какой схеме обрабатывать прерывание (<code>1-N</code>&nbsp;– только одно ядро, или <code>N-N</code>&nbsp;– все ядра), но поля, соответствующие <code>SPI</code>, не позволяют сменить этот бит, т.е. жёстко выбрана схема передачи прерывания только одному ядру. В этом регистре можно только менять тип сигнала - по уровню или по перепаду.</p>
+<p>Для <code>SGI</code> ситуация ещё более определённая: эти прерывания жёстко установлены на обработку по схеме <code>N-N</code> (все ядра) и тип сигнала прерывания (только по перепаду) не может быть изменён. В общем, это логично и правильно: по перепаду&nbsp;– событие инициирования прерывания одномоментное, выполняемое с помощью команд прикладной программы, т.е. оно (событие) не может удерживать сигнал "по уровню". А возможность передавить сигнал всем ядрам обусловлена необходимостью обеспечить механизм обмена асинхронными сообщениями между ядрами.</p>
+<h3 id="_5">Функционирование<a class="headerlink" href="#_5" title="Permanent link">🔗</a></h3>
+<p>Для проверки работоспособности решений использовалась отладочная плата <em>ZedBoard</em>.</p>
+<h4 id="_6">Программные прерывания<a class="headerlink" href="#_6" title="Permanent link">🔗</a></h4>
+<p>Программное прерывание инициируется путём записи в регистр <code>ICDSGIR</code> (Interrupt Controller Distributor Software Generated Interrupts Register). При этом указывается целевое ядро (или список ядер) и идентификатор источника программного прерывания. Например<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup>:</p>
+<div class="language-C++ highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">INLINE</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">wrpa</span><span class="p">(</span><span class="kt">uintptr_t</span><span class="w"> </span><span class="n">addr</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="p">{</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="o">*</span><span class="p">(</span><span class="w"> </span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">volatile</span><span class="w"> </span><span class="kt">uint32_t</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="n">data</span><span class="p">;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">...</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">wrpa</span><span class="p">(</span><span class="w"> </span><span class="n">GIC_ICDSGIR</span><span class="p">,</span><span class="w">                                  </span><span class="c1">// 0b10: send the interrupt on only to the CPU</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="p">(</span><span class="mi">2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">GIC_ICDSGIR_TARGET_LIST_FILTER_BPOS</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">  </span><span class="c1">// interface that requested the interrupt     </span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">      </span><span class="n">PS7IRQ_ID_SW7</span><span class="p">);</span><span class="w">                               </span><span class="c1">// rise software interrupt ID7                                                                                                             </span>
+</span></code></pre></div>
+<p>В этом примере инициируется программное прерывание с ID 7, целевое ядро - то же самое, которое инициирует прерывание. Аналогичный результат может быть получен:</p>
+<div class="language-C++ highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">wrpa</span><span class="p">(</span><span class="w"> </span><span class="n">GIC_ICDSGIR</span><span class="p">,</span><span class="w">                                  </span><span class="c1">// 0b10: send the interrupt on only to the CPU </span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">      </span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">GIC_ICDSGIR_TARGET_LIST_FILTER_BPOS</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">  </span><span class="c1">// interface that requested the interrupt      </span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">      </span><span class="p">(</span><span class="mh">0x01</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">GIC_ICDSGIR_CPU_TARGET_LIST_BPOS</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">  </span><span class="c1">//                                             </span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="n">PS7IRQ_ID_SW7</span><span class="p">);</span><span class="w">                               </span><span class="c1">// rise software interrupt ID7</span>
+</span></code></pre></div>
+<p>Отличие тут в том, что выбор целевых ядер осуществляется по списку (см. описание регистра <code>ICDSGIR</code>). В данном случае указано ядро 0. Если бы, скажем, нужно было указать ядро 1, то значение <code>0x01</code> в <code>(0x01 &lt;&lt; GIC_ICDSGIR_CPU_TARGET_LIST_BPOS)</code> следовало изменить на <code>0x02</code>, а если обоим ядрам, то&nbsp;– <code>0x03</code>. Иными словами, каждому ядру соответствует бит в списке (всего там 8 бит, т.е. GIC поддерживает до 8 ядер).</p>
+<h4 id="_7">Прерывания от периферийных устройств<a class="headerlink" href="#_7" title="Permanent link">🔗</a></h4>
+<h5 id="gpio">GPIO<a class="headerlink" href="#gpio" title="Permanent link">🔗</a></h5>
+<p>Прерывание от периферийных устройств рассмотрено на примере внешнего прерывания от вывода <code>GPIO</code>&nbsp;– из <code>MIO</code> части. Для организации прерывания от внешнего вывода микросхемы нужно настроить соответствующие регистры модуля <code>GPIO</code> и <code>GIC</code>.</p>
+<p><code>GPIO</code>:
+<div class="language-C++ highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">PIN_INT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">50</span><span class="p">;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="c1">//-----------------------------------------------</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="c1">// set up GPIO interrupt</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="n">gpio_clr_int_sts</span><span class="p">(</span><span class="n">PIN_INT</span><span class="p">);</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="n">gpio_int_pol</span><span class="p">(</span><span class="n">PIN_INT</span><span class="p">,</span><span class="w"> </span><span class="n">GPIO_INT_POL_HIGH_RISE</span><span class="p">);</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="n">gpio_int_en</span><span class="p">(</span><span class="n">PIN_INT</span><span class="p">);</span>
+</span></code></pre></div></p>
+<p>Первое, что нужно сделать, это сбросить бит статуса соответствующего вывода MIO. Это необходимо для того, чтобы не возникло ложное прерывание, т.к. любая активность на выводе может взвести флаг прерывания этого вывода в регистре статуса <code>GPIO</code>. И если далее разрешить прерывание, то оно сразу будет осуществлено, хотя событие на выводе происходило в непонятный момент времени, возможно задолго до текущего момента времени. Вряд ли такое прерывание&nbsp;– это то, что хотелось тут получить.</p>
+<p>Далее, если требуется, необходимо указать целевое ядро, настроить тип прерывания&nbsp;– по уровню или по перепаду, указать значение уровня/перепада (низкий/отрицательный перепад или высокий/положительный перепад). И разрешить прерывания от <code>GPIO</code>.</p>
+<p><code>GIC</code>:
+<div class="language-C++ highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="w">    </span><span class="n">gic_set_target</span><span class="p">(</span><span class="n">PS7IRQ_ID_GPIO</span><span class="p">,</span><span class="w"> </span><span class="mi">1ul</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">GIC_CPU0</span><span class="p">);</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">gic_set_config</span><span class="p">(</span><span class="n">PS7IRQ_ID_GPIO</span><span class="p">,</span><span class="w"> </span><span class="n">GIC_EDGE_SINGLE</span><span class="p">);</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">gic_int_enable</span><span class="p">(</span><span class="n">PS7IRQ_ID_GPIO</span><span class="p">);</span>
+</span></code></pre></div></p>
+<p>Тут производится настройка целевого ядра - ядро 0, затем указывается тип прерывания - про фронту (SINGLE означает, что только прерывание предназначено только для одного ядра, а как было указано выше, для <code>SPI</code> доступна только одно ядро, поэтому тут выбора нет). И в заключение - разрешение прерываний от модуля <code>GPIO</code>.</p>
+<p>ISR:</p>
+<div class="language-cpp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">gpio_isr_handler</span><span class="p">()</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="p">{</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="n">gpio_clr_int_sts</span><span class="p">(</span><span class="n">PIN_INT</span><span class="p">);</span><span class="w">    </span><span class="c1">// clear GPIO interrupt flag</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">}</span>
+</span></code></pre></div>
+<h5 id="triple-timercounter">Triple Timer/Counter<a class="headerlink" href="#triple-timercounter" title="Permanent link">🔗</a></h5>
+<p>Показан пример <strong>TTC</strong> в режиме интервального таймера: генерирует прерывания через заданный временной интервал. Исходные данные:</p>
+<ul>
+<li>источник тактовой частоты&nbsp;– внутренний, 100 МГц;</li>
+<li>Интервал прерываний&nbsp;– 1 мс.</li>
+</ul>
+<p>Настройка:</p>
+<div class="language-cpp highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="w">    </span><span class="c1">// ISR: must be defined</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="n">ps7_register_isr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ttc0_0_isr</span><span class="p">,</span><span class="w"> </span><span class="n">PS7IRQ_ID_TTC0_0</span><span class="p">);</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="c1">// GIC</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="n">gic_set_priority</span><span class="p">(</span><span class="n">PS7IRQ_ID_TTC0_0</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="n">gic_set_target</span><span class="p">(</span><span class="n">PS7IRQ_ID_TTC0_0</span><span class="p">,</span><span class="w"> </span><span class="n">GIC_CPU0</span><span class="p">);</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="n">gic_int_enable</span><span class="p">(</span><span class="n">PS7IRQ_ID_TTC0_0</span><span class="p">);</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="c1">// TTC0_0</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="n">wrpa</span><span class="p">(</span><span class="n">TTC_CLK_CTRL1_REG0</span><span class="p">,</span><span class="w"> </span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">       </span><span class="p">(</span><span class="mi">2</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">TTC_CLK_CTRL1_PS_V_BPOS</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w">      </span><span class="c1">// set prescaler to 2^(2+1): 100MHz/8 = 12.5MHz</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">       </span><span class="p">(</span><span class="mi">1</span><span class="w">  </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">TTC_CLK_CTRL1_PS_EN_BPOS</span><span class="p">)</span><span class="w"> </span><span class="p">);</span><span class="w">   </span><span class="c1">// enable prescaler</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">    </span><span class="n">wrpa</span><span class="p">(</span><span class="n">TTC_INTERVAL_CNT1_REG0</span><span class="p">,</span><span class="w"> </span><span class="mi">12500</span><span class="p">);</span><span class="w">                           </span><span class="c1">// 12.5MHz/12500 = 1kHz</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">    </span><span class="n">wrpa</span><span class="p">(</span><span class="n">TTC_INT_EN1_REG0</span><span class="p">,</span><span class="w"> </span><span class="mh">0x1</span><span class="p">);</span><span class="w">                                   </span><span class="c1">// enable interval interrupts</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">    </span><span class="n">sbpa</span><span class="p">(</span><span class="n">TTC_CNT_CTRL1_REG0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">TTC_CNT_CTRL1_INT_BPOS</span><span class="p">);</span><span class="w">         </span><span class="c1">// turn on interval mode</span>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">    </span><span class="n">cbpa</span><span class="p">(</span><span class="n">TTC_CNT_CTRL1_REG0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">TTC_CNT_CTRL1_DIS_BPOS</span><span class="p">);</span><span class="w">         </span><span class="c1">// enable TTC0</span>
+</span></code></pre></div>
+<p>ISR:</p>
+<div class="language-cpp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">ttc0_0_isr</span><span class="p">()</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="p">{</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="n">rdpa</span><span class="p">(</span><span class="n">TTC_INT1_REG0</span><span class="p">);</span><span class="w">     </span><span class="c1">// clear TTC0_0 interrupt flag</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="p">...</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="p">}</span>
+</span></code></pre></div>
+<h4 id="_8">Общие действия<a class="headerlink" href="#_8" title="Permanent link">🔗</a></h4>
+<p>После всех проделанных выше операций необходимо разрешить работу дистрибьютора и интерфейсов процессора:</p>
+<div class="language-C++ highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="w">    </span><span class="n">set_bits_pa</span><span class="p">(</span><span class="n">GIC_ICDDCR</span><span class="p">,</span><span class="w"> </span><span class="mh">0x1</span><span class="p">);</span><span class="w"> </span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="n">set_bits_pa</span><span class="p">(</span><span class="n">GIC_ICCICR</span><span class="p">,</span><span class="w"> </span><span class="mh">0x1</span><span class="p">);</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">enable_interrupts</span><span class="p">();</span>
+</span></code></pre></div>
+<p>Код <code>0x1</code> соответствует разрешению Secure Interrupts (поскольку процессор при включении питания находится в Secure State). Можно включить и для Non-Secure прерываний (код <code>0x3</code>), но в данном случае это ни на что не повлияет, т.к. Non-Secure прерываний в текущей конфигурации нет.</p>
+<h4 id="_9">Особенность прерываний "по уровню"<a class="headerlink" href="#_9" title="Permanent link">🔗</a></h4>
+<p>Если тип сигнала запроса того или иного прерывания в контроллере прерываний настроен на значение "по уровню" (а для большинства прерываний группы <code>SPI</code> это тип по умолчанию), проявляется следующая особенность.</p>
+<p>При тестировании прерывания от внешнего вывода был обнаружен эффект: при однократном нажатии на кнопку (которая подаёт сигнал прерывания на внешний вывод СнК) процессор входит в прерывание дважды. Дребезг кнопки тут ни при чём, т.к. интервал входа в прерывание составляет порядка 300-400 нс.</p>
+<p>Исследование этого эффекта показало, что при втором входе значение идентификатора источника прерывания (то, что считывается из регистра <code>ICCIAR</code>) равно <code>0x3ff</code>, что соответствует специальному коду-значению так называемого <em>spurious interrupt</em>&nbsp;– ложному прерыванию. Ложное прерывание возникает, когда <code>GIC</code> инициировал переход процессора в состояние исключения, но поскольку процесс перехода занимает достаточно большое время (сотни нс), состояние прерывания внутри контроллера прерываний могло измениться - оно было запрещено, отменено, его перехватило другое ядро (хотя это не в данном случае, т.к. в <strong>Zynq7000</strong> прерывания группы <code>SPI</code> могут быть адресованы только одному ядру). Т.е. процессор входит в исключение IRQ (потому что его "дёрнули" за пин <code>nIRQ</code>), считывает идентификатор источника прерываний, а готовых к обработке прерываний нет.</p>
+<p>В рассматриваем случае происходит следующее: при нажатии на кнопку модуль <code>GPIO</code> инициирует прерывание в <code>GIC</code>, тот в свою очередь переводит процессор в состояние обработки исключения, в обработчике исключений считывается <code>ID</code> источника - в данном случае оно равно <code>52</code> (прерывание от <code>GPIO</code>), после чего из таблицы обработчиков прерываний извлекается адрес функции-обработчика прерываний от <code>GPIO</code>, и управление передаётся этой функции. Её код:</p>
+<div class="language-C++ highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">gpio_isr_handler</span><span class="p">()</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="p">{</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="n">gpio_clr_int_sts</span><span class="p">(</span><span class="n">PIN_INT</span><span class="p">);</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Здесь просто сбрасывается флаг прерывания от внешнего вывода (кнопки), который по сути является запросом на прерывание для <code>GIC</code>.</p>
+<p>Далее, процессор возвращается в обработчик исключений, где записывает <code>ID</code> в регистр <code>ICCEOIR</code>, переводя этим состояние прерывания (в контроллере прерываний) в неактивное. </p>
+<p>В силу того, что модуль <code>GPIO</code> находится за уровнем L3 т.е. обращение к его регистрам проходит длинный путь (<code>MMU</code>-&gt;<code>AXI</code> Bus-&gt;<code>Central Interconnect</code>-&gt;<code>AXI - APB</code> Bridge) с переходом в более медленные тактовые домены, сброс флага запроса прерывания занимает значительное время. Помимо этого ещё есть некоторая задержка от физического бита-флага запроса прерывания в модуле <code>GPIO</code> до логики контроллера прерываний.</p>
+<p>В то же время обработчик прерываний в тестовом примере очень простой - в нём нет никакого полезного прикладного кода, т.е. выход из обработчика прерываний происходит сразу же после команды сброса флага запроса прерываний (процессор не ждёт подтверждения записи, т.к. область памяти MMRs периферийных модулей помечена как <em>Device</em> - запрос на запись буферизуется). Возникает ситуация, при которой, когда процессор уже успевает выйти из обработчика исключений, а флаг запроса прерываний ещё не сброшен или уже сброшен в модуле <code>GPIO</code>, но это значение ещё не успело дойти до <code>GIC</code> - в любом случае контроллер прерываний будучи настроенным на сигнал прерывания "по уровню" реагирует на этот флаг и выставляет снова запрос ядру. </p>
+<p>Ядро опять переходит в состояние обработки исключения, но поскольку этот процесс занимает заметный промежуток времени, значение сброшенного флага запроса прерывания от модуля <code>GPIO</code> наконец доходит до контроллера прерываний, и тот снимает запрос на прерывание. Когда ядро читает регистр <code>ICCIAR</code>, оно получается значение <code>0x3ff</code>, что означает ложное прерывание. Прерывание по сути и является ложным.</p>
+<p>В подтверждение этого объяснения был проведён ряд экспериментов. Эффект пропадает, если в после команды сброса флага запроса прерывания внести некоторую задержку, очевидно, достаточную для того, чтобы к моменту выхода процессора из обработчика исключения контроллер прерываний успел "увидеть" сброшенный флаг запроса прерывания от периферийного модуля (<code>GPIO</code> в данном случае).</p>
+<p>Очевидно, что такое поведение (ложный вход в обработку прерывания) не является желаемым, поэтому нужно предотвратить его. Для этого можно использовать следующие варианты:</p>
+<ul>
+<li>Поместить в обработчик прерываний после команды сброса флага код, время выполнения которого гарантировано больше времени прохождения сброса флага запроса прерывания от ядра до периферийного модуля и от последнего до контролера прерываний. Этот способ самый естественный, но задержку трудно контролировать и тем самым обеспечить гарантию.</li>
+<li>Выполнить после команды сброса флага команду чтения регистра состояния, где размещается этот флаг. При этом возникнет достаточно большая задержка из-за длинного пути прохождения сигналов от периферии до ядра. Но эта задержка замедляет работу программы бесполезным образом.</li>
+<li>Настроить тип сигнала запроса на прерывания в <code>GIC</code> на значение "по перепаду". Именно этот вариант и использован выше: выражение <code>gic_set_config(PS7IRQ_ID_GPIO, GIC_EDGE_SINGLE);</code>. Этот способ предотвращает ложное прерывание в <code>GIC</code>, т.к. даже если флаг запроса всё ещё установлен в периферийном модуле при выходе процессора из обработчика исключения в основную программу, контроллер прерываний не "видит" в этом запроса, т.к. запрос на прерывание в этом случае для <code>GIC</code> - это изменение значения этого флага с неактивного состояния на активное. А это произойдёт только при следующем нажатии на кнопку. Таким образом, удаётся достичь корректной работы.</li>
+</ul>
+<p>Следует отметить, что настройка по умолчанию почти для всех источников прерываний из группы <code>SPI</code> является "по уровню", поэтому этот эффект может проявляться с любым другим периферийным модулем. Нужно внимательно смотреть в каждом случае и применять настройку "по перепаду", если она решает проблему.</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p><code>wrpa</code> &nbsp;– "write to phisical address", запись по физическому адресу.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../debug/" class="btn btn-neutral float-left" title="Debug"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../mmu/" class="btn btn-neutral float-right" title="Memory Management Unit">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../debug/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../mmu/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/wavedrom.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/skins/default.js"></script>
+      <script src="../js/wavedrom_loader.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/wavedrom@2.1.2/wavedrom.unpkg.js"></script>
+      <script src="https://wavedrom.com/skins/default.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+<script>const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});</script></body>
+</html>

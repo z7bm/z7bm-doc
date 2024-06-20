@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Implementation - Zynq-7000 Baremetal</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Implementation";
+        var mkdocs_page_input_path = "impl.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+ <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Zynq-7000 Baremetal
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">General</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="..">Purpose</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Implementation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#_2">Концепция</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#_3">Размещение в памяти</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_4">Начальная загрузка</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#_5">Состав комплекта</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Software</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../loader/">Loader</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../app/">Application Program</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../debug/">Debug</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hardware</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../gic/">Interrupt Controller</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mmu/">Memory Management Unit</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Libraries</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../mmr-headers/">MMR Headers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../peripheral-lib/">Peripheral</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Zynq-7000 Baremetal</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">General</li>
+      <li class="breadcrumb-item active">Implementation</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="_1">Реализация<a class="headerlink" href="#_1" title="Permanent link">🔗</a></h1>
+<h2 id="_2">Концепция<a class="headerlink" href="#_2" title="Permanent link">🔗</a></h2>
+<h3 id="_3">Размещение в памяти<a class="headerlink" href="#_3" title="Permanent link">🔗</a></h3>
+<p>Основная идея для достижения быстрой и предсказуемой работы программы состоит в том, чтобы разместить код и данные программы во внутренней памяти SoC&nbsp;– OCM (On-Chip Memory), см. изображение ниже (выделено зелёным).</p>
+<p>OCM SoC <strong>Zynq-7000</strong> имеет размер 256 килобайт и располагается на уровне L2&nbsp;– это ближайший уровень к CPU. В случае промаха кэшей L1 задержка обращения к памяти будет ограничена временем доступа в OCM. </p>
+<p>При размещении программы/данных во внешней памяти при промахе кэша L1 будет произведено обращение в кэш L2, при промахе в нём далее будет осуществляться доступ к внешней памяти посредством контроллера DDR (выделено красным)&nbsp;– результат этого подробно описан <a href="../#benchmarks">в предыдущем разделе</a>.</p>
+<p><a class="glightbox" href="../img/z7-mem-access.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="" src="../img/z7-mem-access.png" stype:="stype:" width="800" /></a></p>
+<p><br></p>
+<p>ОСМ в SoC <strong>Zynq-7000</strong> является статическим ОЗУ (оперативное запоминающее устройство&nbsp;– RAM:
+Random-Access Memory), имеет объём 256 кбайт и представлена в виде четырёх сегментов  по 64 кбайт
+размером каждый. При включении эти сегменты распределены следующим образом: три сегмента
+располагаются подряд, начиная с адреса <code>0x00000000</code>, и один сегмент в конце адресного пространства
+с адреса <code>0xffff0000</code>.</p>
+<p>Такое разделение не имеет никаких достоинств для bare-metal программы, напротив&nbsp;– это снижает эффективность и удобство разработки, поэтому на этапе загрузки производится перемещение трёх сегментов с адреса <code>0x00000000</code> в конец адресного пространства так, чтобы все четыре сегмента образовывали единый непрерывный сегмент ОЗУ, расположенный по адресу <code>0xfffc0000</code>. Эти действия выполняются <a href="../loader">загрузчиком</a> после инициализации непосредственно перед загрузкой пользовательской программы в OCM.</p>
+<h3 id="_4">Начальная загрузка<a class="headerlink" href="#_4" title="Permanent link">🔗</a></h3>
+<p>Работа SoC начинается с процесса начальной загрузки, состоящей из из двух этапов:</p>
+<ol>
+<li>инициализация аппаратуры процессора (кэши, MMU), контроллера прерываний, периферийных устройств, включая контроллер DDR;</li>
+<li>конфигурация целевой памяти (ОСМ) и загрузка прикладной программы в неё.</li>
+</ol>
+<p>Благодаря наличию загрузчика имеется возможность произвести инициализацию периферии и статическую инициализацию переменных на этапе загрузки прикладной программы&nbsp;– это позволит уменьшить размер используемой памяти.</p>
+<p>Все эти действия выполняются загрузчиком, работа которого <a href="../loader">подробно описана в соответствующем разделе</a>.</p>
+<h2 id="_5">Состав комплекта<a class="headerlink" href="#_5" title="Permanent link">🔗</a></h2>
+<p>Поддержка разработки ПО в режиме bare-metal содержит следующие компоненты:</p>
+<ul>
+<li>загрузчик;</li>
+<li>библиотеки;</li>
+<li>шаблон прикладной программы со средствами автоматизированной сборки.</li>
+</ul>
+<p>Все эти части подробно описаны далее.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Purpose"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../loader/" class="btn btn-neutral float-right" title="Loader">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../loader/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/wavedrom.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/skins/default.js"></script>
+      <script src="../js/wavedrom_loader.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/wavedrom@2.1.2/wavedrom.unpkg.js"></script>
+      <script src="https://wavedrom.com/skins/default.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+<script>const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});</script></body>
+</html>
