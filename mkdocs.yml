@@ -1,0 +1,66 @@
+site_name: Zynq-7000 Baremetal
+#site_url: ''
+#use_directory_urls: false
+
+extra_css: [extra.css]
+
+theme:
+    name: readthedocs
+    max_width: 2000
+    features:
+        - content.code.copy
+        - content.code.annotate     
+  # name: windmill
+
+nav:
+    - General:
+        - Purpose                : index.md 
+        - Implementation         : impl.md 
+      
+    - Software:  
+        - Loader                 : loader.md
+        - Application Program    : app.md
+        - Debug                  : debug.md
+      
+    - Hardware:  
+        - Interrupt Controller   : gic.md
+        - Memory Management Unit : mmu.md
+
+    - Libraries:
+        - MMR Headers            : mmr-headers.md
+        - Peripheral             : peripheral-lib.md
+
+
+extra_javascript:
+    - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+    - https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/wavedrom.min.js
+    - https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.6.8/skins/default.js
+    - js/wavedrom_loader.js
+    - https://cdn.jsdelivr.net/npm/wavedrom@2.1.2/wavedrom.unpkg.js
+    - https://wavedrom.com/skins/default.js
+
+markdown_extensions:
+    - toc:
+        permalink: "🔗"
+        baselevel: 1
+    - mdx_math
+    - admonition
+    - attr_list
+    - footnotes
+    - markdown_wavedrom
+    - pymdownx.details
+    - pymdownx.superfences
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.superfences
+    - pymdownx.highlight:
+        anchor_linenums: true
+        line_spans: __span
+        pygments_lang_class: true
+
+plugins:
+    - search:
+        lang: ru
+
+    - glightbox
+    #- markdownwavedrom
