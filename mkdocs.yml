@@ -30,6 +30,10 @@ nav:
         - MMR Headers            : mmr-headers.md
         - Peripheral             : peripheral-lib.md
 
+    - Target Boards:
+        - ZedBoard               : zed.md
+        - AX7021                 : ax7021.md
+
 
 extra_javascript:
     - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
