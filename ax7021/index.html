@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Peripheral - Zynq-7000 Baremetal</title>
+    <title>AX7021 - Zynq-7000 Baremetal</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
@@ -13,8 +13,8 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Peripheral";
-        var mkdocs_page_input_path = "peripheral-lib.md";
+        var mkdocs_page_name = "AX7021";
+        var mkdocs_page_input_path = "ax7021.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -68,17 +68,25 @@
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Libraries</span></p>
-              <ul class="current">
+              <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../mmr-headers/">MMR Headers</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Peripheral</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../peripheral-lib/">Peripheral</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Target Boards</span></p>
-              <ul>
+              <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../zed/">ZedBoard</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../ax7021/">AX7021</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">AX7021</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#_1">Общие сведения</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#_2">Терминал</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ethernet">Ethernet</a>
+    </li>
+    </ul>
                   </li>
               </ul>
       </div>
@@ -95,8 +103,8 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-          <li class="breadcrumb-item">Libraries</li>
-      <li class="breadcrumb-item active">Peripheral</li>
+          <li class="breadcrumb-item">Target Boards</li>
+      <li class="breadcrumb-item active">AX7021</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -105,13 +113,46 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                
+                <h1 id="ax7021">AX7021<a class="headerlink" href="#ax7021" title="Permanent link">🔗</a></h1>
+<h2 id="_1">Общие сведения<a class="headerlink" href="#_1" title="Permanent link">🔗</a></h2>
+<p><strong>AX7021</strong>&nbsp;– это универсальная сборка на основе SoC <strong>Zynq-7000</strong>, состоящая из двух плат:</p>
+<ul>
+<li>Core Board&nbsp;– <strong>AC7021</strong>, содержащую непосредственно SoC, DDR3 память, загрузочную флешь, eMMC, локальные источники питания, разъёмы для подключения к несущей плате и др.;</li>
+<li>несущая плата с разъёмами для подключения Core Board и устройствами ввода-вывода:<ul>
+<li>1 Gigabit Ethernet PHY, подключенный к PS части SoC;</li>
+<li>4 Gigabit Ethernet PHY, подключенных к PL части SoC;</li>
+<li>4 USB интерфейса;</li>
+<li>1 HDMI;</li>
+<li>1 USB-UART;</li>
+<li>2 40-контактных IDC разъёма, куда ввыведены сигналы ввода-вывода от PL части SoC;</li>
+<li>1 отладочный интерфейс для подключения через USB-JTAG;</li>
+<li>1 USB-UART.</li>
+</ul>
+</li>
+</ul>
+<p>Core Board может использоваться как в составе сборки, так и самостоятельно. В последнем случае питание платы осуществляется через micro-USB разъём, расположенный на ней, который служит также и разъёмом питания&nbsp;– плата питается от USB.</p>
+<div class="admonition warning">
+<p class="admonition-title"><strong>ПРЕДУПРЕЖДЕНИЕ</strong></p>
+<p>Данное устройство не является отладочным, поэтому на нём не предусмотрены тестовые точки и другие средства для подлключения с целью отработки взаимодействия с внешними платами и отладки. В частности, сигналы MIO не выведены ни на один из разъёмов, и доступ к этой группе (а это ввод-вывод непосредственно управляемый из APU) может осущетсвляться только путём подключения к отдельным цепям платы, куда выведены те или иныте сигналы из MIO группы.</p>
+</div>
+<h2 id="_2">Терминал<a class="headerlink" href="#_2" title="Permanent link">🔗</a></h2>
+<p>Для целей вывода информации разного рода, а также для управления устройством предусмотрен последовательный интерфейс, подключаемый к удалённому хосту через терминальную программу. В качестве такого интерфейса <strong>AС7021</strong> предлагает два варианта в зависимости от способа подключения:</p>
+<ul>
+<li><strong>UART0</strong>, если <strong>AC7021</strong> подключается сама по себе;</li>
+<li><strong>UART1</strong>, если <strong>AC7021</strong> подключается через несущую плату.</li>
+</ul>
+<p>В качестве моста USB-UART обе платы используют <strong>CP2102-GM</strong> компании <strong>Silicon Labs</strong>. Для работы с этим устройством в для операционных систем семейства <strong>Ubuntu</strong> правила <strong>udev</strong> уже присутствуют. Для доступа к устройству без административных прав достаточно включить пользователя в группу <code>dialout</code>.</p>
+<div class="admonition error">
+<p class="admonition-title"><strong>ВНИМАНИЕ</strong></p>
+<p>При использовании в качестве терминальной программы <strong>minicom</strong> необходимо отключить Hadware Flow Control в её настройках. В противном случае обмен данными не осуществляется.</p>
+</div>
+<h2 id="ethernet">Ethernet<a class="headerlink" href="#ethernet" title="Permanent link">🔗</a></h2>
+<p><strong>AX7021</strong> имеет в составе 5 каналов 1GbE, один из которых подключен к PS части SoC, а 4&nbsp;– к PL части...</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../mmr-headers/" class="btn btn-neutral float-left" title="MMR Headers"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../zed/" class="btn btn-neutral float-right" title="ZedBoard">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../zed/" class="btn btn-neutral float-left" title="ZedBoard"><span class="icon icon-circle-arrow-left"></span> Previous</a>
     </div>
 
   <hr/>
@@ -134,10 +175,8 @@
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../mmr-headers/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../zed/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
-    
-      <span><a href="../zed/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
