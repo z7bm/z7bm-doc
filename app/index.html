@@ -55,7 +55,7 @@
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../loader/">Loader</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Application Program</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Application Program</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#_2">Общие сведения</a>
     </li>
@@ -113,7 +113,7 @@
               
                 <h1 id="_1">Прикладная программа<a class="headerlink" href="#_1" title="Permanent link">🔗</a></h1>
 <h2 id="_2">Общие сведения<a class="headerlink" href="#_2" title="Permanent link">🔗</a></h2>
-<p>Программа загружается в <strong>OCM</strong> с помощью <a href="../loader">загрузчика</a> на рантайме или с помощью отладочного интерфейса <a href="../debug#debug-load">при отладке</a>. В обоих случаях выполняется основная инициализация аппаратуры как самого CPU, так и периферийных устройств. Это позволяет не делать это при запуске прикладной программы, что экономит память и сокращает время старта.</p>
+<p>Программа загружается в <strong>OCM</strong> с помощью <a href="../loader/">загрузчика</a> на рантайме или с помощью отладочного интерфейса <a href="../debug/#debug-load">при отладке</a>. В обоих случаях выполняется основная инициализация аппаратуры как самого CPU, так и периферийных устройств. Это позволяет не делать это при запуске прикладной программы, что экономит память и сокращает время старта.</p>
 <p>В данном случае программа не выполняет каких-либо полезных функций, а носит сугубо демонстрационный характер&nbsp;– является примером-шаблоном.</p>
 <h2 id="_3">Описание кода<a class="headerlink" href="#_3" title="Permanent link">🔗</a></h2>
 <p>В качестве тестового кода используется пример <code>2-message</code> из состава <a href="https://github.com/scmrtos/scmrtos-sample-projects/tree/develop/samples/cortex/zynq7k/2-message"><strong>scmRTOS</strong></a>. Пример является достаточно минималистичным, он содержит:</p>
@@ -197,5 +197,6 @@ CPU_1x   = 100 МГц.
         });
     </script>
 
-<script>const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});</script></body>
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+</script></body>
 </html>

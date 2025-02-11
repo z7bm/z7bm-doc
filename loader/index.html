@@ -53,7 +53,7 @@
               </ul>
               <p class="caption"><span class="caption-text">Software</span></p>
               <ul class="current">
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Loader</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Loader</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#_2">Общие сведения и назначение</a>
     </li>
@@ -513,7 +513,7 @@
 </tbody>
 </table>
 <h4 id="_7">Таблица трансляции<a class="headerlink" href="#_7" title="Permanent link">🔗</a></h4>
-<p><strong>MMU</strong> использует инициализированную <a href="../mmu">таблицу трансляции адресов</a> (описана в <code>translation_table.S</code>).</p>
+<p><strong>MMU</strong> использует инициализированную <a href="../mmu/">таблицу трансляции адресов</a> (описана в <code>translation_table.S</code>)<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup>.</p>
 <h3 id="l2">Кэш L2<a class="headerlink" href="#l2" title="Permanent link">🔗</a></h3>
 <p>Кэш <code>L2</code> не входит в ядро, и поэтому управляется не через регистры сопроцессора <code>CP15</code>, а через регистры, отображаемые на адресное пространство памяти (memory-mapped registers - MMRs).</p>
 <p>Выполняемые действия:</p>
@@ -1007,5 +1007,6 @@
         });
     </script>
 
-<script>const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});</script></body>
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+</script></body>
 </html>
