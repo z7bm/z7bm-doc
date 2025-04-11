@@ -1,49 +1,95 @@
 
 h1 {
-  font-size: 48px;
-  margin-bottom: 1px;
+  font-size: 56px;
+  font-family: "Titillium Web[RUS by Daymarius]";
+  margin-bottom: 0px;
+}
+
+h1 + h2 {
+  margin-top: -1rem;
+  margin-bottom: 1em;
 }
 
 h2 {
-  margin-top: 40px;
-  margin-bottom: 1px;
-  font-size: 32px;
+  margin-top: 0px;
+  margin-bottom: -1em;
+  font-size: 42px;
+  font-family: "Titillium Web[RUS by Daymarius]";
+}
+
+h2 + h3 {
+  margin-top: -1rem;
+  margin-bottom: 1em;
+}
+
+h2 + p {
+  margin-top: -1rem;
+  margin-bottom: 1em;
 }
 
 h3 {
-  margin-top: 40px;
-  margin-bottom: 1px;
-  font-size: 24px;
+  margin-top: 0em;
+  margin-bottom: -2em;
+  font-size: 34px;
+  font-family: "Titillium Web[RUS by Daymarius]";
 }
+
+h3 + h4 {
+  margin-top: -1rem;
+  margin-bottom: 1em;
+}
+h3 + p {
+  margin-top: -1rem;
+  margin-bottom: 1em;
+}
+
 
 h4 {
-  margin-top: 20px;
-  margin-bottom: 10px;
-  font-size: 18px;
+  margin-top: 0em;
+  margin-bottom: 0em;
+  font-size: 26px;
+  font-family: "Titillium Web[RUS by Daymarius]";
 }
 
+h4 + p {
+  margin-top: -1rem;
+  margin-bottom: 1em;
+}
+
+
 h5 {
-  margin-top: 20px;
+  margin-top: 10px;
   margin-bottom: 0px;
-  font-size: 16px;
+  font-size: 22px;
+  font-family: "Titillium Web[RUS by Daymarius]";
+}
+
+h5 + p {
+  margin-top: -1rem;
+  margin-bottom: 1em;
 }
 
 h6 {
-  margin-top: 40px;
-  font-size: 14px;
+  margin-top: 20px;
+  font-size: 20px;
+  font-family: "Titillium Web[RUS by Daymarius]";
 }
 
 p {
-    margin-top: 0.75em;
-    margin-bottom: 0em;
+    margin-top:    0em;
+    margin-bottom: 0.75em;
+    font-size: 18px;
+    font-family: "Titillium Web[RUS by Daymarius]";
 }
 
 ul {
-    margin-top: 0.5em;
+    margin-top: 0.1em;
+    font-family: "Titillium Web[RUS by Daymarius]";
 }
 
 li {
-    margin-top: 0.5em;
+    margin-top: 0.1em;
+    font-family: "Titillium Web[RUS by Daymarius]";
 }
 
 /* Remove the gap between a paragraph and a list that follows it */
@@ -64,6 +110,24 @@ table {
      max-width: 1024px; /* or any other value you prefer */
 }
    
+@font-face {
+  font-family: "Titillium Web[RUS by Daymarius]";
+  font-weight: normal;
+  font-style: normal;
+  src: url(font/TitilliumWebRUS/titilliumwebrusbydaymarius_rg.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: "Titillium Web[RUS by Daymarius]";
+  font-weight: bold;
+  font-style: normal;
+  src: url(font/TitilliumWebRUS/titilliumwebrusbydaymarius_bd.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: TerminusRe;
+  src: url(font/TerminusRe33-Bold.ttf);
+}
 .rst-content code {
     color: #0000aa;
     font-size: 16px;
@@ -81,7 +145,8 @@ table {
     line-height: 1.2;
 }
 
-@font-face {
-  font-family: TerminusRe;
-  src: url(font/TerminusRe33-Bold.ttf);
+figcaption {
+    font-weight: bold;
+    text-align: center;
 }
+

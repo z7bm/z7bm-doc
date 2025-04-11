@@ -6,6 +6,7 @@ theme:
     name: readthedocs
     max_width: 2000
     navigation_depth: 5
+    font: false
     features:
         - content.code.copy
         - content.code.annotate
